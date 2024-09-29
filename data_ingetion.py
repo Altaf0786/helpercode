@@ -194,7 +194,7 @@ class DataIngestorFactory:
 
 # Main execution
 if __name__ == "__main__":
-    # Update this path to point to your file
+   ''' # Update this path to point to your file
     file_path = Path("/Users/mdaltafshekh/Downloads/chhs-cac6d0b5-93d0-4f62-9f05-b3eebb63431f.zip")
     output_dir = Path("data_directory")  # Using the same directory for extraction and output
 
@@ -212,3 +212,5 @@ if __name__ == "__main__":
             print(df.head())
     except Exception as e:
         logging.error("An error occurred: %s", e)
+'''
+pass

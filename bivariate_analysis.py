@@ -271,18 +271,20 @@ class BivariateAnalysisContext:
 
     def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None):
         self._strategy.analyze(df, feature1, feature2, hue)
-
+if __name__ == "__main__":
 # Example usage
-df = sns.load_dataset('titanic')  # Ensure the dataset contains 'age', 'fare', 'pclass', and 'survived'
+   ''' df = sns.load_dataset('titanic')  # Ensure the dataset contains 'age', 'fare', 'pclass', and 'survived'
 
-# Continuous vs Continuous
-context = BivariateAnalysisContext(ContinuousVsContinuousAnalysis())
-context.analyze(df, 'age', 'fare')
+    # Continuous vs Continuous
+    context = BivariateAnalysisContext(ContinuousVsContinuousAnalysis())
+    context.analyze(df, 'age', 'fare')
 
-# Continuous vs Categorical
-context.set_strategy(ContinuousVsCategoricalAnalysis())
-context.analyze(df, 'age', 'pclass',hue='pclass')
+    # Continuous vs Categorical
+    context.set_strategy(ContinuousVsCategoricalAnalysis())
+    context.analyze(df, 'age', 'pclass',hue='pclass')
 
-# Categorical vs Categorical
-context.set_strategy(CategoricalVsCategoricalAnalysis())
-context.analyze(df, 'pclass', 'survived')
+    # Categorical vs Categorical
+    context.set_strategy(CategoricalVsCategoricalAnalysis())
+    context.analyze(df, 'pclass', 'survived')
+'''
+pass
