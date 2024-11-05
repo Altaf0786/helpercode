@@ -480,7 +480,7 @@ class UnivariateAnalyzer:
 
 # Example usage of the UnivariateAnalyzer with different strategies.
 if __name__ == "__main__":
-    # Create a sample dataframe for demonstration
+    """# Create a sample dataframe for demonstration
     np.random.seed(0)
     df = pd.DataFrame({
         'numerical_feature': np.random.normal(loc=50, scale=10, size=1000),
@@ -495,5 +495,6 @@ if __name__ == "__main__":
     # Analyzing a categorical feature
     print("\nCategorical Feature Analysis:")
     analyzer.set_strategy(CategoricalUnivariateAnalysis())
-    analyzer.execute_analysis(df, 'categorical_feature')
+    analyzer.execute_analysis(df, 'categorical_feature')"""
+    pass
 
