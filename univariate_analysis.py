@@ -50,6 +50,11 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Executes various visualization methods.
         """
         print(f"Analysis for Numerical Feature '{feature}':")
+        print("\nDataFrame Information:")
+        df.info()
+        print("\nDescriptive Statistics:")
+        print(df[feature].describe())
+
         self._print_statistics(df, feature)
         self._plot_histogram_with_kde(df, feature)
         self._plot_boxplot(df, feature)
@@ -268,6 +273,11 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Executes various visualization methods.
         """
         print(f"Analysis for Categorical Feature '{feature}':")
+        print("\nDataFrame Information:")
+        df.info()
+        print("\nFrequency Table:")
+        print(df[feature].value_counts())
+
         self._plot_barplot(df, feature)
         self._plot_pie_chart(df, feature)
         self._plot_exploded_pie_chart(df, feature)
