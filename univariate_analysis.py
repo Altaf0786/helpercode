@@ -245,17 +245,39 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         Returns:
         None: Displays an ECDF plot.
         """
+        # Sort the data and drop missing values
         sorted_data = np.sort(df[feature].dropna())
+        
+        # Calculate ECDF values
         ecdf = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
-        plt.figure(figsize=(10, 6))
-        plt.step(sorted_data, ecdf, where='post', color=color_palette['primary'])
-        plt.title(f'ECDF of {feature}', fontsize=18, color=color_palette['dark'])
-        plt.xlabel(feature, fontsize=14)
-        plt.ylabel('ECDF', fontsize=14)
-        plt.grid(True)
-        plt.show()
 
-  
+        # Create a Plotly figure
+        fig = go.Figure()
+
+        # Add a step line for the ECDF
+        fig.add_trace(go.Scatter(
+            x=sorted_data, 
+            y=ecdf, 
+            mode='lines+markers',
+            name='ECDF', 
+            line=dict(shape='hv', width=2, color=self.color_palette['primary']),
+            marker=dict(size=4)
+        ))
+
+        # Update layout
+        fig.update_layout(
+            title=f'ECDF of {feature}', 
+            title_font=dict(size=18, color=self.color_palette['dark']),
+            xaxis_title=feature,
+            yaxis_title='ECDF',
+            xaxis=dict(showgrid=True),
+            yaxis=dict(showgrid=True),
+            width=800,
+            height=400
+        )
+
+        # Show the plot
+        fig.show()
 
     
 # Concrete Strategy for Categorical Features Analysis
