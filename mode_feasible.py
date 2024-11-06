@@ -1,161 +1,104 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+import seaborn as sns
 from sklearn.impute import SimpleImputer
-from scipy.stats import ks_2samp
-from abc import ABC, abstractmethod
 
-# Define the Strategy Interface
-class ImputationStrategy(ABC):
-    @abstractmethod
-    def impute(self, df: pd.DataFrame, cat_col: str, num_col: str):
-        pass
-
-# Concrete strategy that imputes missing values using the most frequent value (mode)
-class MostFrequentImputation(ImputationStrategy):
-    def impute(self, df: pd.DataFrame, cat_col: str, num_col: str):
-        print(f"Imputing missing values for {cat_col} using the most frequent value.")
-        df = df.copy()  # Ensure we are working with a writable copy
-        
-        # Check for missing values in the column
-        missing_data = df[df[cat_col].isnull()][num_col]  
-        
-        if missing_data.empty:
-            print(f"No missing values found for {cat_col}.")
-            return None, None  # No imputation needed if no missing values
-
-        mode_value = df[cat_col].mode()[0]
-        df[cat_col].fillna(mode_value, inplace=True)
-        imputed_data = df[df[cat_col] == mode_value][num_col]
-        return missing_data, imputed_data
-
-# Concrete strategy that uses scikit-learn's SimpleImputer to fill missing values
-class SklearnImputation(ImputationStrategy):
-    def impute(self, df: pd.DataFrame, cat_col: str, num_col: str):
-        print(f"Imputing missing values for {cat_col} using sklearn's SimpleImputer.")
-        df = df.copy()  # Ensure we are working with a writable copy
-        
-        # Check for missing values in the column
-        missing_data = df[df[cat_col].isnull()][num_col]
-        
-        if missing_data.empty:
-            print(f"No missing values found for {cat_col}.")
-            return None, None  # No imputation needed if no missing values
-
-        imputer = SimpleImputer(strategy='most_frequent')
-        df[cat_col] = imputer.fit_transform(df[[cat_col]]).ravel()
-        imputed_data = df[df[cat_col] == df[cat_col].mode()[0]][num_col]
-        return missing_data, imputed_data
-
-# Plotting and Statistical Testing Functions
-def plot_value_counts(df, cat_col):
-    plt.figure(figsize=(10, 6))
-    df[cat_col].value_counts().plot(kind='bar', title=f'{cat_col} - Value Counts')
-    plt.xlabel(cat_col)
-    plt.ylabel('Count')
-    plt.show()
-
-def plot_distribution_comparison(original_data, imputed_data, title):
-    if original_data is None or imputed_data is None:
-        print("No missing data found for imputation, skipping distribution plot.")
-        return
-
-    plt.figure(figsize=(12, 6))
-    ax = plt.gca()
-    original_data.plot(kind='kde', ax=ax, label='Original Data', color='blue')
-    imputed_data.plot(kind='kde', ax=ax, label='After Imputation', color='red')
-    ax.set_title(title)
-    ax.legend()
-    plt.xlabel('Values')
-    plt.ylabel('Density')
-    plt.show()
-
-def perform_statistical_test(original_data, imputed_data):
-    if original_data is None or imputed_data is None:
-        print("No missing data found for imputation, skipping statistical test.")
-        return
-
-    statistic, p_value = ks_2samp(original_data, imputed_data)
-    print(f'KS Statistic: {statistic:.4f}, p-value: {p_value:.4f}')
-    if p_value < 0.05:
-        print("The distributions are significantly different.")
-    else:
-        print("The distributions are not significantly different.")
-
-# Context Class
-class ImputationContext:
-    def __init__(self, strategy: ImputationStrategy):
-        self.strategy = strategy
-
-    def set_strategy(self, strategy: ImputationStrategy):
-        self.strategy = strategy
-
-    def impute_and_compare(self, df: pd.DataFrame, cat_col: str, num_col: str):
-        print(f"Value counts before imputation for {cat_col}:")
-        plot_value_counts(df, cat_col)
-        missing_data, imputed_data = self.strategy.impute(df, cat_col, num_col)
-        print(f"Comparing distributions for {num_col} before and after imputation in {cat_col}:")
-        plot_distribution_comparison(missing_data, imputed_data, f'{cat_col} - Distribution Before and After Imputation')
-        perform_statistical_test(missing_data, imputed_data)
-        print(f"Value counts after imputation for {cat_col}:")
-        plot_value_counts(df, cat_col)
-
-# Main function
-def main(dataset, use_cols, cat_cols, num_cols, target_col, strategy: ImputationStrategy):
-    # If dataset is a file path, load the data
-    if isinstance(dataset, str):
-        df = pd.read_csv(dataset, usecols=use_cols)
-    else:
-        df = dataset
+def analyze_and_impute(df: pd.DataFrame, cat_columns: list = None, num_columns: list = None):
+    """
+    Function to analyze and impute missing values for specified categorical and numerical columns in a dataset.
     
-    context = ImputationContext(strategy)
+    Parameters:
+    df (pd.DataFrame): The dataset containing the columns to analyze.
+    cat_columns (list, optional): List of categorical column names to analyze. If None, all categorical columns are analyzed.
+    num_columns (list, optional): List of numerical column names to analyze. If None, all numerical columns are analyzed.
     
-    # Iterate over each feature column to apply imputation and comparison
-    for feature in cat_cols:
-        for num_col in num_cols:
-            context.impute_and_compare(df, feature, num_col)
+    Returns:
+    pd.DataFrame: The imputed DataFrame.
+    """
     
+    # If no specific columns are passed, use all categorical and numerical columns
+    if cat_columns is None:
+        cat_columns = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    if num_columns is None:
+        num_columns = df.select_dtypes(include=['number']).columns.tolist()
+
+    # Check if there are any categorical or numerical columns
+    if len(cat_columns) == 0:
+        print("No categorical columns found.")
+    if len(num_columns) == 0:
+        print("No numerical columns found.")
+    
+    # Create the SimpleImputer (to be used for imputing numerical values later)
+    imputer = SimpleImputer(strategy='most_frequent')
+
+    # For each categorical column specified
+    for cat_col in cat_columns:
+        # Skip columns with no missing values
+        if df[cat_col].isnull().sum() == 0:
+            print(f"No missing values in {cat_col}. Skipping...\n")
+            continue
+        
+        print(f"\nAnalyzing column: {cat_col}")
+        
+        # 1. Percentage of missing values
+        missing_percentage = df[cat_col].isnull().mean() * 100
+        print(f"Percentage of Missing Values in {cat_col}: {missing_percentage:.2f}%")
+        
+        # 2. Value counts for the categorical column before imputation
+        print(f"Value counts for {cat_col} before imputation:")
+        print(df[cat_col].value_counts())
+        
+        # Plot the value counts before imputation
+        fig, ax = plt.subplots(figsize=(12, 6))
+        df[cat_col].value_counts().plot(kind='bar', ax=ax)
+        ax.set_title(f"Value Counts of {cat_col} Before Imputation")
+        plt.show()
+        
+        # 3. KDE Plots for numerical columns based on the most frequent category
+        if len(num_columns) > 0:  # Check if there are any numerical columns
+            for num_col in num_columns:  # Iterate through all numerical columns
+                fig, ax = plt.subplots(figsize=(12, 6))
+                
+                # Get the most frequent category from the categorical column
+                most_frequent_category = df[cat_col].mode()[0]
+                
+                # Plot KDE for the numerical column for the mode category
+                df[df[cat_col] == most_frequent_category][num_col].plot(kind='kde', ax=ax, label=f'{num_col} with {most_frequent_category}')
+                
+                # Plot KDE for the numerical column for the missing values in the categorical column
+                if df[cat_col].isnull().sum() > 0:
+                    df[df[cat_col].isnull()][num_col].plot(kind='kde', ax=ax, color='red', label=f'{num_col} with NA')
+                
+                ax.legend(loc='best')
+                ax.set_title(f'{cat_col} - Distribution of {num_col}')
+                plt.show()
+        
+        # 4. Impute missing values with the most frequent category
+        most_frequent_category = df[cat_col].mode()[0]
+        df.loc[:, cat_col] = df[cat_col].fillna(most_frequent_category)  # Use .loc[] to ensure proper assignment
+        
+        # 5. Value counts for the categorical column after imputation
+        print(f"Value counts for {cat_col} after imputation:")
+        print(df[cat_col].value_counts())
+        
+        # Plot the value counts after imputation
+        fig, ax = plt.subplots(figsize=(12, 6))
+        df[cat_col].value_counts().plot(kind='bar', ax=ax)
+        ax.set_title(f"Value Counts of {cat_col} After Imputation")
+        plt.show()
+        
+        print(f"Completed analysis for {cat_col}\n")
+    
+    # Return the imputed dataframe for further analysis or usage
     return df
 
-# Example usage
+# Example usage:
+# Replace with the actual dataset path
+# df = pd.read_csv('your_data.csv')
 if __name__ == "__main__":
-    # Example use
-   """ use_cols = [
-        'Price', 'Area', 'Location', 'No. of Bedrooms', 'Resale', 'MaintenanceStaff', 
-        'Gymnasium', 'SwimmingPool', 'LandscapedGardens', 'JoggingTrack', 
-        'RainWaterHarvesting', 'IndoorGames', 'ShoppingMall', 'Intercom', 
-        'SportsFacility', 'ATM', 'ClubHouse', 'School', '24X7Security', 'PowerBackup', 
-        'CarParking', 'StaffQuarter', 'Cafeteria', 'MultipurposeRoom', 'Hospital', 
-        'WashingMachine', 'Gasconnection', 'AC', 'Wifi', "Children'splayarea", 
-        'LiftAvailable', 'BED', 'VaastuCompliant', 'Microwave', 'GolfCourse', 
-        'TV', 'DiningTable', 'Sofa', 'Wardrobe', 'Refrigerator', 'City'
-    ]
-    
-    cat_cols = [
-         'Resale', 'MaintenanceStaff', 'Gymnasium', 'SwimmingPool', 
-        'LandscapedGardens', 'JoggingTrack', 'RainWaterHarvesting', 'IndoorGames', 
-        'ShoppingMall', 'Intercom', 'SportsFacility', 'ATM', 'ClubHouse', 'School', 
-        '24X7Security', 'PowerBackup', 'CarParking', 'StaffQuarter', 'Cafeteria', 
-        'MultipurposeRoom', 'Hospital', 'WashingMachine', 'Gasconnection', 'AC', 
-        'Wifi', "Children'splayarea", 'LiftAvailable', 'BED', 'VaastuCompliant', 
-        'Microwave', 'GolfCourse', 'TV', 'DiningTable', 'Sofa', 'Wardrobe', 
-        'Refrigerator', 'City'
-    ]
-    
-    num_cols = ['Price', 'Area', 'No. of Bedrooms']
-    target_col = 'Price'
-
-    # Assuming 'data_converted' is your dataset
-    # Use MostFrequentImputation strategy
-    strategy = MostFrequentImputation()
-    
-    # Perform imputation using MostFrequentImputation strategy
-    df_imputed = main(data_converted, use_cols, cat_cols, num_cols, target_col, strategy)
-    
-    # Switch to SklearnImputation strategy for comparison
-    strategy = SklearnImputation()
-    
-    # Perform imputation using SklearnImputation strategy
-    df_imputed_sklearn = main(data_converted, use_cols, cat_cols, num_cols, target_col, strategy)"""
-pass
+# Call the function for specific columns in the dataset
+ '''cat_columns = ['MaintenanceStaff','Gymnasium', 'SwimmingPool', 'LandscapedGardens', 'JoggingTrack',]  # Specify the categorical columns
+    num_columns = ['Price']  # Specify the numerical columns
+    df_imputed = analyze_and_impute(data_converted, cat_columns=cat_columns, num_columns=num_columns)'''
+pass    
