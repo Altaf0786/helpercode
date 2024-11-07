@@ -71,34 +71,34 @@ class SimpleImputationStrategy(MissingValueHandlingStrategy):
 # Concrete Strategy for Missing Indicator from sklearn
 class MissingIndicatorStrategy(MissingValueHandlingStrategy):
     def __init__(self):
-        self.indicator = MissingIndicator()
+        self.indicator = MissingIndicator(features="missing-only")  # Only columns with missing values
 
     def handle(self, df: pd.DataFrame, columns=None) -> pd.DataFrame:
-        logging.info("Creating missing value indicators.")
-        if columns is None:
-            columns = df.columns.tolist()  # Use all columns if none are specified
+        logging.info("Creating missing value indicators for columns with missing data only.")
+        
+        # Fit the indicator on the DataFrame and transform it
+        indicator_array = self.indicator.fit_transform(df)
+        
+        # Get the names of columns with missing values
+        missing_columns = df.columns[self.indicator.features_]
+        
+        # Create a DataFrame for the indicator output with appropriate column names
+        indicator_columns = [f"{col}_missing" for col in missing_columns]
+        indicator_df = pd.DataFrame(indicator_array, columns=indicator_columns, index=df.index)
+        
+        # Convert boolean to 0 and 1 (False -> 0, True -> 1)
+        indicator_df = indicator_df.astype(int)
 
-        # Create a copy of the original DataFrame to avoid modifying it
-        df_copy = df.copy()
-
-        # Iterate over each specified column to create a missing indicator
-        for col in columns:
-            # Check if the column has any missing values
-            if df_copy[col].isnull().any():
-                # Fit the MissingIndicator on the specified column
-                indicator_array = self.indicator.fit_transform(df_copy[[col]])
-                # Create DataFrame for the indicator with the same index as original DataFrame
-                indicator_df = pd.DataFrame(indicator_array, columns=[f"{col}_missing"], index=df_copy.index)
-                # Concatenate the original DataFrame with the indicator DataFrame
-                df_copy = pd.concat([df_copy, indicator_df], axis=1)
-            else:
-                logging.info(f"No missing values found in column '{col}', skipping indicator creation.")
-
-        # Drop the original columns after creating indicators
-        df_copy.drop(columns=columns, inplace=True, errors='ignore')
-
+        # Concatenate the indicators with the original DataFrame
+        df_with_indicators = pd.concat([df, indicator_df], axis=1)
+        
+        # Drop the original columns that had missing values by name
+        df_with_indicators.drop(columns=missing_columns, inplace=True)
+        
         logging.info("Missing value indicators created and original columns removed.")
-        return df_copy
+        return df_with_indicators
+
+
 
 
 # Context Class for Handling Missing Values
