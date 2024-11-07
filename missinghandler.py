@@ -135,3 +135,36 @@ if __name__ == "__main__":
     print("After Creating Missing Indicators:\n", df_with_indicators)
 '''
 pass
+
+
+''' The choice between axis=0 (columns) and axis=1 (rows) depends on the specific operation and context of your data, as each axis influences how missing values are handled during imputation.
+
+1. axis=0 (Column-wise)
+Imputation behavior: When you use axis=0, the operation is applied column by column.
+
+KNN Imputation: The missing values in each column are imputed based on the nearest neighbors (other rows) in that same column. This is the most common approach for imputation, as missing values are generally assumed to be related to other rows in the same feature.
+Simple Imputation: For strategies like mean or median imputation, each column is imputed with the mean or median value calculated across the non-missing values in that column.
+MICE Imputation: MICE works on column-wise relationships and tries to predict the missing values for each column based on other columns. It iterates over the columns to fill in missing values using the rest of the dataset.
+Why use axis=0: Column-wise imputation makes more sense when each column represents a distinct feature (e.g., different measurements for the same set of observations). Missing values in a column are likely to be better predicted using other rows (similar observations).
+
+2. axis=1 (Row-wise)
+Imputation behavior: When axis=1 is used, the operation is applied row by row.
+
+KNN Imputation: Missing values in each row are imputed using the nearest neighbors across different columns (i.e., using other features in the same row). This method is less common and less intuitive, as it assumes missing values in the same row can be imputed based on the relationship between features (which may not always be the case).
+Simple Imputation: Imputation will be done across the row, so missing values in the row will be filled with the mean, median, or most frequent value calculated across the columns for that row.
+MICE Imputation: This approach is typically less effective row-wise, as MICE relies on inter-column relationships, so applying it row-wise may not yield the desired results.
+Why use axis=1: This is rarely useful for imputation, as imputation typically depends on column-wise relationships (features). However, axis=1 might be used in certain situations where features (columns) are strongly dependent on each other and missingness in one row might have patterns based on other rows.
+
+Which is better?
+For Imputation:
+Generally, axis=0 (column-wise) is preferred, especially when missing values are assumed to be correlated with other rows of the same column. For example, you might use this when missing data in a column (feature) is imputed based on the values of that column in other rows.
+Row-wise imputation (axis=1) may not make as much sense unless there is a very specific relationship between features in a row.
+Summary:
+Use axis=0 for column-wise imputation, which is standard for most imputation strategies.
+Use axis=1 only in cases where your rows have strong inter-feature dependencies and you believe missing values in a row can be effectively imputed based on other features within that row. This is quite rare in practice.
+
+
+
+
+
+'''
