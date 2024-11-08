@@ -226,6 +226,7 @@ class NumericalUnivariateAnalysis:
         plt.show()
 
   
+  # Define the function to plot a QQ plot for normality check
     def _plot_qq(self, df: pd.DataFrame, feature: str):
         """
         Plot a QQ plot to check the normality of the numerical feature.
@@ -237,8 +238,9 @@ class NumericalUnivariateAnalysis:
         Returns:
         None: Displays a QQ plot.
         """
+            
         plt.figure(figsize=(10, 6))
-        sm.qqplot(df[feature].dropna(), line='45')
+        sm.qqplot(df[feature].dropna(), line='45')  # 'line=45' draws a reference line at 45-degree angle
         plt.title(f'QQ Plot of {feature}', fontsize=18)
         plt.grid(True)
         plt.show()
@@ -447,34 +449,30 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
 
 
     def _plot_stripplot_with_counts_and_size(self, df: pd.DataFrame, feature: str):
-      """
-      Plot a strip plot where y-values represent counts of the categorical feature,
-      and the size of each point corresponds to the count of each category.
+        """
+        Plot a strip plot where the y-values represent counts of the categories in the categorical feature.
 
-      Parameters:
-      df (pd.DataFrame): The dataframe containing the data.
-      feature (str): The name of the categorical feature/column to be analyzed.
+        Parameters:
+        df (pd.DataFrame): The dataframe containing the data.
+        feature (str): The name of the categorical feature/column to be analyzed.
 
-      Returns:
-      None: Displays a strip plot with counts as y-values and sizes corresponding to counts.
-      """
-      # Calculate counts for each category
-      counts = df[feature].value_counts().reset_index()
-      counts.columns = [feature, 'Count']
-      
-      plt.figure(figsize=(10, 6))
+        Returns:
+        None: Displays a strip plot based on counts and size.
+        """
+        # Get the counts of each category
+        category_counts = df[feature].value_counts().reset_index()
+        category_counts.columns = [feature, 'count']
+        
+        # Create a strip plot with size based on counts
+        plt.figure(figsize=(10, 6))
+        sns.stripplot(x=feature, y='count', data=category_counts, size=10, jitter=True, palette='Set2')
 
-      # Create a strip plot using seaborn
-      sns.stripplot(x=counts[feature], y=counts['Count'], jitter=True, hue=counts[feature], palette='viridis', dodge=True, legend=False)
-
-     
-
-      plt.title(f'Strip Plot of {feature} with Counts and Sizes', fontsize=18, color='darkblue')
-      plt.xlabel(feature, fontsize=14)
-      plt.ylabel('Count', fontsize=14)
-      plt.grid(True)
-      plt.show()
-
+        plt.title(f'Strip Plot of {feature} with Counts', fontsize=18)
+        plt.xlabel(feature, fontsize=14)
+        plt.ylabel('Count', fontsize=14)
+        plt.xticks(rotation=45)
+        plt.grid(True)
+        plt.show()
     
 
 ## Context Class that uses a UnivariateAnalysisStrategy
