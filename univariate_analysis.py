@@ -50,8 +50,6 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Executes various visualization methods.
         """
         print(f"Analysis for Numerical Feature '{feature}':")
-        print("\nDataFrame Information:")
-        df.info()
         print("\nDescriptive Statistics:")
         print(df[feature].describe())
 
@@ -295,8 +293,8 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Executes various visualization methods.
         """
         print(f"Analysis for Categorical Feature '{feature}':")
-        print("\nDataFrame Information:")
-        df.info()
+       
+      
         print("\nFrequency Table:")
         print(df[feature].value_counts())
 
