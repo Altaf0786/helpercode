@@ -258,14 +258,14 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
             y=ecdf, 
             mode='lines+markers',
             name='ECDF', 
-            line=dict(shape='hv', width=2, color=self.color_palette['primary']),
+            line=dict(shape='hv', width=2, color=color_palette['primary']),
             marker=dict(size=4)
         ))
 
         # Update layout
         fig.update_layout(
             title=f'ECDF of {feature}', 
-            title_font=dict(size=18, color=self.color_palette['dark']),
+            title_font=dict(size=18, color=color_palette['dark']),
             xaxis_title=feature,
             yaxis_title='ECDF',
             xaxis=dict(showgrid=True),
