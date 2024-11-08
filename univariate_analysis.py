@@ -227,6 +227,7 @@ class NumericalUnivariateAnalysis:
 
   
   # Define the function to plot a QQ plot for normality check
+    import statsmodels.api as sm
     def _plot_qq(self, df: pd.DataFrame, feature: str):
         """
         Plot a QQ plot to check the normality of the numerical feature.
