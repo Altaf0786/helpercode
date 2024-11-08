@@ -59,17 +59,22 @@ class ContinuousVsContinuousAnalysis(BivariateAnalysisStrategy):
         
         if df_clean.empty:
             print("No data available for residual plot after cleaning.")
-            return
+            return  # Exits the function if no data is available
 
-        X = sm.add_constant(df_clean[feature1])
+        # Fit a linear model
+        X = sm.add_constant(df_clean[feature1])  # Adds a constant term to the predictor
         model = sm.OLS(df_clean[feature2], X).fit()
         residuals = df_clean[feature2] - model.predict(X)
+        
+        # Plot residuals
         plt.figure(figsize=(10, 6))
         sns.scatterplot(x=df_clean[feature1], y=residuals)
         plt.title('Residual Plot')
         plt.xlabel(feature1)
         plt.ylabel('Residuals')
+        plt.axhline(0, color='red', linestyle='--')  # Adds a horizontal line at 0
         plt.show()
+
 
     def _plot_hexbin(self, df: pd.DataFrame, feature1: str, feature2: str):
         plt.figure(figsize=(10, 6))
