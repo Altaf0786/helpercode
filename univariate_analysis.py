@@ -34,13 +34,13 @@ class UnivariateAnalysisStrategy(ABC):
         pass
 
 # Concrete Strategy for Advanced Numerical Features Analysis
-class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
+class NumericalUnivariateAnalysis:
     def analyze(self, df: pd.DataFrame, feature: str):
         """
         Perform advanced numerical analysis and visualization on a feature.
         Displays various plots including histogram with KDE, box plot, KDE plot,
         violin plot, cumulative frequency plot, frequency polygon, density plot,
-        ECDF plot, and pair plot.
+        ECDF plot, pair plot, QQ plot, strip plot, rug plot, and lag plot.
 
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
@@ -58,11 +58,14 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         self._plot_boxplot(df, feature)
         self._plot_kde(df, feature)
         self._plot_violin(df, feature)
-        self._plot_cumulative_frequency(df, feature)
         self._plot_frequency_polygon(df, feature)
         self._plot_density(df, feature)
         self._plot_ecdf(df, feature)
-       
+        self._plot_qq(df, feature)
+        self._plot_rug(df, feature)
+        self._plot_strip(df, feature)
+  
+
     def _print_statistics(self, df: pd.DataFrame, feature: str):
         """
         Print statistical measures for the numerical feature including mean,
@@ -97,8 +100,8 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Displays a histogram with KDE plot.
         """
         plt.figure(figsize=(10, 6))
-        sns.histplot(df[feature], kde=True, bins=30, color=color_palette['primary'])
-        plt.title(f'Histogram and KDE of {feature}', fontsize=18, color=color_palette['dark'])
+        sns.histplot(df[feature], kde=True, bins=30)
+        plt.title(f'Histogram and KDE of {feature}', fontsize=18)
         plt.xlabel(feature, fontsize=14)
         plt.ylabel('Density', fontsize=14)
         plt.grid(True)
@@ -115,14 +118,12 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         Returns:
         None: Displays a box plot.
         """
-        fig = px.box(df, y=feature, title=f'Box Plot of {feature}', color_discrete_sequence=[color_palette['primary']])
-        fig.update_layout(
-            title_x=0.5,
-            title_font_size=24,
-            title_font_color=color_palette['dark'],
-            yaxis_title=feature
-        )
-        fig.show()
+        plt.figure(figsize=(10, 6))
+        sns.boxplot(data=df, y=feature)
+        plt.title(f'Box Plot of {feature}', fontsize=18)
+        plt.xlabel(feature, fontsize=14)
+        plt.grid(True)
+        plt.show()
 
     def _plot_kde(self, df: pd.DataFrame, feature: str):
         """
@@ -136,8 +137,8 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Displays a KDE plot.
         """
         plt.figure(figsize=(10, 6))
-        sns.kdeplot(df[feature], fill=True, color=color_palette['primary'])
-        plt.title(f'Density Plot (KDE) of {feature}', fontsize=18, color=color_palette['dark'])
+        sns.kdeplot(df[feature], fill=True)
+        plt.title(f'Density Plot (KDE) of {feature}', fontsize=18)
         plt.xlabel(feature, fontsize=14)
         plt.ylabel('Density', fontsize=14)
         plt.grid(True)
@@ -154,38 +155,13 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         Returns:
         None: Displays a violin plot.
         """
-        fig = px.violin(df, y=feature, box=True, points="all", title=f'Violin Plot of {feature}', color_discrete_sequence=[color_palette['primary']])
-        fig.update_layout(
-            title_x=0.5,
-            title_font_size=24,
-            title_font_color=color_palette['dark']
-        )
-        fig.show()
+        plt.figure(figsize=(10, 6))
+        sns.violinplot(data=df, y=feature)
+        plt.title(f'Violin Plot of {feature}', fontsize=18)
+        plt.xlabel(feature, fontsize=14)
+        plt.grid(True)
+        plt.show()
 
-    def _plot_cumulative_frequency(self, df: pd.DataFrame, feature: str):
-        """
-        Plot a cumulative frequency plot for the numerical feature.
-
-        Parameters:
-        df (pd.DataFrame): The dataframe containing the data.
-        feature (str): The name of the numerical feature/column to be analyzed.
-
-        Returns:
-        None: Displays a cumulative frequency plot.
-        """
-        sorted_data = np.sort(df[feature].dropna())
-        cumulative_freq = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=sorted_data, y=cumulative_freq, mode='markers+lines', marker=dict(color=color_palette['primary'])))
-        fig.update_layout(
-            title=f'Cumulative Frequency Plot of {feature}',
-            xaxis_title=feature,
-            yaxis_title='Cumulative Frequency',
-            title_x=0.5,
-            title_font_size=24,
-            title_font_color=color_palette['dark']
-        )
-        fig.show()
 
     def _plot_frequency_polygon(self, df: pd.DataFrame, feature: str):
         """
@@ -200,17 +176,13 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         """
         hist, bins = np.histogram(df[feature].dropna(), bins=10)
         bin_centers = 0.5 * (bins[:-1] + bins[1:])
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=bin_centers, y=hist, mode='lines+markers', marker=dict(color=color_palette['primary'])))
-        fig.update_layout(
-            title=f'Frequency Polygon of {feature}',
-            xaxis_title=feature,
-            yaxis_title='Frequency',
-            title_x=0.5,
-            title_font_size=24,
-            title_font_color=color_palette['dark']
-        )
-        fig.show()
+        plt.figure(figsize=(10, 6))
+        plt.plot(bin_centers, hist, marker='o', linestyle='-', markersize=6)
+        plt.title(f'Frequency Polygon of {feature}', fontsize=18)
+        plt.xlabel(feature, fontsize=14)
+        plt.ylabel('Frequency', fontsize=14)
+        plt.grid(True)
+        plt.show()
 
     def _plot_density(self, df: pd.DataFrame, feature: str):
         """
@@ -224,8 +196,8 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Displays a density plot.
         """
         plt.figure(figsize=(10, 6))
-        sns.histplot(df[feature], kde=True, color=color_palette['primary'])
-        plt.title(f'Density Plot of {feature}', fontsize=18, color=color_palette['dark'])
+        sns.histplot(df[feature], kde=True)
+        plt.title(f'Density Plot of {feature}', fontsize=18)
         plt.xlabel(feature, fontsize=14)
         plt.ylabel('Density', fontsize=14)
         plt.grid(True)
@@ -243,40 +215,68 @@ class NumericalUnivariateAnalysis(UnivariateAnalysisStrategy):
         Returns:
         None: Displays an ECDF plot.
         """
-        # Sort the data and drop missing values
         sorted_data = np.sort(df[feature].dropna())
-        
-        # Calculate ECDF values
         ecdf = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
 
-        # Create a Plotly figure
-        fig = go.Figure()
+        plt.figure(figsize=(10, 6))
+        plt.plot(sorted_data, ecdf, marker='o', linestyle='-', markersize=6)
+        plt.title(f'ECDF Plot of {feature}', fontsize=18)
+        plt.xlabel(feature, fontsize=14)
+        plt.ylabel('ECDF', fontsize=14)
+        plt.grid(True)
+        plt.show()
 
-        # Add a step line for the ECDF
-        fig.add_trace(go.Scatter(
-            x=sorted_data, 
-            y=ecdf, 
-            mode='lines+markers',
-            name='ECDF', 
-            line=dict(shape='hv', width=2, color=color_palette['primary']),
-            marker=dict(size=4)
-        ))
+  
+    def _plot_qq(self, df: pd.DataFrame, feature: str):
+        """
+        Plot a QQ plot to check the normality of the numerical feature.
 
-        # Update layout
-        fig.update_layout(
-            title=f'ECDF of {feature}', 
-            title_font=dict(size=18, color=color_palette['dark']),
-            xaxis_title=feature,
-            yaxis_title='ECDF',
-            xaxis=dict(showgrid=True),
-            yaxis=dict(showgrid=True),
-            width=800,
-            height=400
-        )
+        Parameters:
+        df (pd.DataFrame): The dataframe containing the data.
+        feature (str): The name of the numerical feature/column to be analyzed.
 
-        # Show the plot
-        fig.show()
+        Returns:
+        None: Displays a QQ plot.
+        """
+        plt.figure(figsize=(10, 6))
+        sm.qqplot(df[feature].dropna(), line='45')
+        plt.title(f'QQ Plot of {feature}', fontsize=18)
+        plt.grid(True)
+        plt.show()
 
+    def _plot_rug(self, df: pd.DataFrame, feature: str):
+        """
+        Plot a rug plot to show the distribution of individual data points of the numerical feature.
+
+        Parameters:
+        df (pd.DataFrame): The dataframe containing the data.
+        feature (str): The name of the numerical feature/column to be analyzed.
+
+        Returns:
+        None: Displays a rug plot.
+        """
+        plt.figure(figsize=(10, 6))
+        sns.rugplot(df[feature].dropna())
+        plt.title(f'Rug Plot of {feature}', fontsize=18)
+        plt.grid(True)
+        plt.show()
+
+    def _plot_strip(self, df: pd.DataFrame, feature: str):
+        """
+        Plot a strip plot to show the distribution of the numerical feature.
+
+        Parameters:
+        df (pd.DataFrame): The dataframe containing the data.
+        feature (str): The name of the numerical feature/column to be analyzed.
+
+        Returns:
+        None: Displays a strip plot.
+        """
+        plt.figure(figsize=(10, 6))
+        sns.stripplot(data=df, y=feature)
+        plt.title(f'Strip Plot of {feature}', fontsize=18)
+        plt.grid(True)
+        plt.show()
     
 # Concrete Strategy for Categorical Features Analysis
 class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
@@ -307,42 +307,63 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         self._plot_stripplot_with_counts_and_size(df, feature)
           
     def _plot_barplot(self, df: pd.DataFrame, feature: str):
-          """
-          Plot a bar plot to visualize the frequency of each category in the categorical feature.
+        """
+        Plot a bar plot to visualize the frequency of each category in the categorical feature.
 
-          Parameters:
-          df (pd.DataFrame): The dataframe containing the data.
-          feature (str): The name of the categorical feature/column to be analyzed.
+        Parameters:
+        df (pd.DataFrame): The dataframe containing the data.
+        feature (str): The name of the categorical feature/column to be analyzed.
 
-          Returns:
-          None: Displays a bar plot.
-          """
-          plt.figure(figsize=(10, 6))
-          
-          # Get value counts and the corresponding index (categories)
-          value_counts = df[feature].value_counts()
-          categories = value_counts.index
-          counts = value_counts.values
+        Returns:
+        None: Displays a bar plot.
+        """
+        plt.figure(figsize=(10, 6))
+        
+        # Get value counts and the corresponding index (categories)
+        value_counts = df[feature].value_counts()
+        
+        # Create the bar plot
+        sns.barplot(x=value_counts.index, y=value_counts.values, palette="Set2")
 
-          # Adjust palette length to match the number of categories
-          num_categories = len(categories)
-          palette = color_palette['bar_vibrant'][:num_categories]
+        plt.title(f'Bar Plot of {feature}', fontsize=18, color='darkblue')
+        plt.xlabel(feature, fontsize=14)
+        plt.ylabel('Count', fontsize=14)
+        plt.xticks(rotation=45)
+        plt.grid(True)
+        plt.show()
 
-          # Create the bar plot
-          sns.barplot(x=categories, y=counts, palette=palette, hue=categories)
-          
-          plt.title(f'Bar Plot of {feature}', fontsize=18, color=color_palette['dark'])
-          plt.xlabel(feature, fontsize=14)
-          plt.ylabel('Count', fontsize=14)
-          plt.xticks(rotation=45)
-          plt.grid(True)
-          plt.legend(title=feature, loc='upper right', bbox_to_anchor=(1.1, 1), borderaxespad=0.)
-          plt.show()
+    def _plot_stripplot_with_counts_and_size(self, df: pd.DataFrame, feature: str):
+        """
+        Plot a strip plot where y-values represent counts of the categorical feature,
+        and the size of each point corresponds to the count of each category.
+
+        Parameters:
+        df (pd.DataFrame): The dataframe containing the data.
+        feature (str): The name of the categorical feature/column to be analyzed.
+
+        Returns:
+        None: Displays a strip plot with counts as y-values and sizes corresponding to counts.
+        """
+        # Calculate counts for each category
+        counts = df[feature].value_counts().reset_index()
+        counts.columns = [feature, 'Count']
+        
+        plt.figure(figsize=(10, 6))
+
+        # Create a scatter plot where size of points corresponds to count of each category
+        sns.scatterplot(data=counts, x=feature, y='Count', size='Count', sizes=(20, 200), hue=feature, palette='Set2', legend=None)
+
+        plt.title(f'Strip Plot of {feature} with Counts and Sizes', fontsize=18, color='darkblue')
+        plt.xlabel(feature, fontsize=14)
+        plt.ylabel('Count', fontsize=14)
+        plt.grid(True)
+        plt.show()
+
 
 
     def _plot_pie_chart(self, df: pd.DataFrame, feature: str):
         """
-        Plot a pie chart to show the proportion of each category in the categorical feature.
+        Plot a pie chart to visualize the distribution of categories in the categorical feature.
 
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
@@ -351,18 +372,15 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         Returns:
         None: Displays a pie chart.
         """
-        counts = df[feature].value_counts()
-        fig = px.pie(values=counts, names=counts.index, title=f'Pie Chart of {feature}', color_discrete_sequence=color_palette['bar_vibrant'])
-        fig.update_layout(
-            title_x=0.5,
-            title_font_size=24,
-            title_font_color=color_palette['dark']
-        )
-        fig.show()
+        value_counts = df[feature].value_counts()
+        plt.figure(figsize=(8, 8))
+        plt.pie(value_counts, labels=value_counts.index, autopct='%1.1f%%', colors=color_palette['bar_vibrant'][:len(value_counts)])
+        plt.title(f'Pie Chart of {feature}', fontsize=18, color=color_palette['dark'])
+        plt.show()
 
     def _plot_exploded_pie_chart(self, df: pd.DataFrame, feature: str):
         """
-        Plot an exploded pie chart to highlight specific categories.
+        Plot an exploded pie chart to emphasize a specific category in the pie chart.
 
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
@@ -371,21 +389,16 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         Returns:
         None: Displays an exploded pie chart.
         """
-        counts = df[feature].value_counts()
-        fig = px.pie(values=counts, names=counts.index, title=f'Exploded Pie Chart of {feature}', 
-                     hole=0.3, color_discrete_sequence=color_palette['bar_vibrant'])
-        fig.update_traces(hoverinfo='label+percent', textinfo='percent+label', 
-                          pull=[0.1 if i == 0 else 0 for i in range(len(counts))])
-        fig.update_layout(
-            title_x=0.5,
-            title_font_size=24,
-            title_font_color=color_palette['dark']
-        )
-        fig.show()
+        value_counts = df[feature].value_counts()
+        explode = [0.1 if i == 0 else 0 for i in range(len(value_counts))]
+        plt.figure(figsize=(8, 8))
+        plt.pie(value_counts, labels=value_counts.index, autopct='%1.1f%%', explode=explode, colors=color_palette['bar_vibrant'][:len(value_counts)])
+        plt.title(f'Exploded Pie Chart of {feature}', fontsize=18, color=color_palette['dark'])
+        plt.show()
 
     def _plot_donut_chart(self, df: pd.DataFrame, feature: str):
         """
-        Plot a donut chart to show the proportion of each category with a hole in the center.
+        Plot a donut chart, which is essentially a pie chart with a hole in the center.
 
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
@@ -394,15 +407,12 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         Returns:
         None: Displays a donut chart.
         """
-        counts = df[feature].value_counts()
-        fig = px.pie(values=counts, names=counts.index, title=f'Donut Chart of {feature}', 
-                     hole=0.4, color_discrete_sequence=color_palette['bar_vibrant'])
-        fig.update_layout(
-            title_x=0.5,
-            title_font_size=24,
-            title_font_color=color_palette['dark']
-        )
-        fig.show()
+        value_counts = df[feature].value_counts()
+        plt.figure(figsize=(8, 8))
+        wedges, texts, autotexts = plt.pie(value_counts, labels=value_counts.index, autopct='%1.1f%%', startangle=90, colors=color_palette['bar_vibrant'][:len(value_counts)])
+        plt.setp(wedges, width=0.3)  # Make it a donut by creating a hole in the center
+        plt.title(f'Donut Chart of {feature}', fontsize=18, color=color_palette['dark'])
+        plt.show()
 
     def _plot_countplot(self, df: pd.DataFrame, feature: str):
         """
@@ -416,17 +426,16 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Displays a count plot.
         """
         plt.figure(figsize=(10, 6))
-        sns.countplot(x=feature, data=df, palette=color_palette['bar_vibrant'])
+        sns.countplot(x=df[feature], palette=color_palette['bar_vibrant'][:len(df[feature].value_counts())])
         plt.title(f'Count Plot of {feature}', fontsize=18, color=color_palette['dark'])
         plt.xlabel(feature, fontsize=14)
         plt.ylabel('Count', fontsize=14)
-        plt.xticks(rotation=45)
         plt.grid(True)
         plt.show()
 
     def _print_frequency_table(self, df: pd.DataFrame, feature: str):
         """
-        Print a table showing the frequency count of each category in the categorical feature.
+        Print a frequency table for the categorical feature, showing the count of each category.
 
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
@@ -436,6 +445,7 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         None: Outputs the frequency table to the console.
         """
         print(df[feature].value_counts().sort_index())
+
 
     def _plot_stripplot_with_counts_and_size(self, df: pd.DataFrame, feature: str):
       """
