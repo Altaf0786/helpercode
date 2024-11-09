@@ -7,20 +7,26 @@ from scipy.stats import chi2_contingency, ttest_ind, f_oneway, spearmanr, kendal
 import statsmodels.api as sm
 
 # Abstract Base Class for Bivariate Analysis Strategy
+# Abstract Base Class for Bivariate Analysis Strategy
 class BivariateAnalysisStrategy(ABC):
     @abstractmethod
-    def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None):
+    def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None, **kwargs):
         """
-        Perform bivariate analysis on two features of the dataframe.
+        Perform bivariate analysis on two features of the dataframe. This method can be used to 
+        visualize and/or compute statistics about the relationship between two features.
 
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
         feature1 (str): The name of the first feature/column to be analyzed.
         feature2 (str): The name of the second feature/column to be analyzed.
         hue (str): The name of the categorical feature/column to be used as hue (optional).
+        **kwargs: Additional parameters to modify or control the analysis behavior.
 
         Returns:
-        None: This method visualizes or analyzes the relationship between the two features.
+        None: This method is responsible for visualizing or analyzing the relationship between the two features.
+        
+        Example:
+        You could pass additional parameters to control plot styling, statistical test options, etc.
         """
         pass
 
@@ -121,24 +127,37 @@ class ContinuousVsContinuousAnalysis(BivariateAnalysisStrategy):
 
 
 # Concrete Strategy for Continuous vs Categorical
+
 class ContinuousVsCategoricalAnalysis(BivariateAnalysisStrategy):
-    def analyze(self, df: pd.DataFrame, continuous_feature: str, categorical_feature: str, hue: str = None):
-        self._plot_boxplot(df, continuous_feature, categorical_feature, hue)
-        self._plot_violin(df, continuous_feature, categorical_feature, hue)
-        self._plot_bar_with_error(df, continuous_feature, categorical_feature)
-        self._plot_strip(df, continuous_feature, categorical_feature, hue)
-        self._plot_swarm(df, continuous_feature, categorical_feature, hue)
-        self._plot_boxen(df, continuous_feature, categorical_feature)
-        self._plot_point(df, continuous_feature, categorical_feature)
-        self._plot_ecdf(df, continuous_feature, categorical_feature)
-        self._barplot(df, continuous_feature, categorical_feature, hue,estimator=np.mean)
+    def analyze(self, df: pd.DataFrame, continuous_feature: str, categorical_feature: str, hue: str = None, top_n_categories: int = 10):
+        # Filter for the top N categories based on frequency
+        df_filtered = self._filter_high_cardinality(df, categorical_feature, top_n_categories)
+        
+        self._plot_boxplot(df_filtered, continuous_feature, categorical_feature, hue)
+        self._plot_violin(df_filtered, continuous_feature, categorical_feature, hue)
+        self._plot_bar_with_error(df_filtered, continuous_feature, categorical_feature)
+        self._plot_strip(df_filtered, continuous_feature, categorical_feature, hue)
+        self._plot_swarm(df_filtered, continuous_feature, categorical_feature, hue)
+        self._plot_boxen(df_filtered, continuous_feature, categorical_feature)
+        self._plot_point(df_filtered, continuous_feature, categorical_feature)
+        self._plot_ecdf(df_filtered, continuous_feature, categorical_feature)
+        self._barplot(df_filtered, continuous_feature, categorical_feature, hue, estimator=np.mean)
+
+    def _filter_high_cardinality(self, df: pd.DataFrame, categorical_feature: str, top_n_categories: int):
+        # Select only top N most frequent categories or group the rest into 'Other'
+        top_categories = df[categorical_feature].value_counts().nlargest(top_n_categories).index
+        df_filtered = df[df[categorical_feature].isin(top_categories)]
+        return df_filtered
+
     def _plot_boxplot(self, df: pd.DataFrame, continuous_feature: str, categorical_feature: str, hue: str = None):
         plt.figure(figsize=(10, 6))
         sns.boxplot(x=categorical_feature, y=continuous_feature, hue=hue, data=df)
         plt.title(f'Box Plot of {continuous_feature} by {categorical_feature}')
         plt.xlabel(categorical_feature)
         plt.ylabel(continuous_feature)
+        plt.xticks(rotation=45)
         plt.show()
+
     def _barplot(self, df: pd.DataFrame, continuous_feature: str, categorical_feature: str, hue: str = None, estimator=None):
         plt.figure(figsize=(10, 6)) 
         sns.barplot(x=categorical_feature, y=continuous_feature, hue=hue, data=df, estimator=estimator)
@@ -203,8 +222,9 @@ class ContinuousVsCategoricalAnalysis(BivariateAnalysisStrategy):
         plt.title(f'ECDF of {continuous_feature} by {categorical_feature}')
         plt.xlabel(continuous_feature)
         plt.ylabel('ECDF')
-        plt.legend(title=categorical_feature)
+        plt.legend(title=categorical_feature) 
         plt.show()
+
 
 # Concrete Strategy for Categorical vs Categorical
 class CategoricalVsCategoricalAnalysis(BivariateAnalysisStrategy):

@@ -334,34 +334,6 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         plt.grid(True)
         plt.show()
 
-    def _plot_stripplot_with_counts_and_size(self, df: pd.DataFrame, feature: str):
-        """
-        Plot a strip plot where y-values represent counts of the categorical feature,
-        and the size of each point corresponds to the count of each category.
-
-        Parameters:
-        df (pd.DataFrame): The dataframe containing the data.
-        feature (str): The name of the categorical feature/column to be analyzed.
-
-        Returns:
-        None: Displays a strip plot with counts as y-values and sizes corresponding to counts.
-        """
-        # Calculate counts for each category
-        counts = df[feature].value_counts().reset_index()
-        counts.columns = [feature, 'Count']
-        
-        plt.figure(figsize=(10, 6))
-
-        # Create a scatter plot where size of points corresponds to count of each category
-        sns.scatterplot(data=counts, x=feature, y='Count', size='Count', sizes=(20, 200), hue=feature, palette='Set2', legend=None)
-
-        plt.title(f'Strip Plot of {feature} with Counts and Sizes', fontsize=18, color='darkblue')
-        plt.xlabel(feature, fontsize=14)
-        plt.ylabel('Count', fontsize=14)
-        plt.grid(True)
-        plt.show()
-
-
 
     def _plot_pie_chart(self, df: pd.DataFrame, feature: str):
         """
