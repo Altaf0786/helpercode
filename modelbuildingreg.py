@@ -14,6 +14,7 @@ from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor  # Ensure you have xgboost installed
 from lightgbm import LGBMRegressor  # Ensure you have lightgbm installed
 from catboost import CatBoostRegressor  # Ensure you have catboost installed
+from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.impute import SimpleImputer
@@ -157,7 +158,17 @@ class GradientBoostingRegressorStrategy(ModelBuildingRegressorStrategy):
         except Exception as e:
             logging.error(f"Error in training Gradient Boosting Regressor model: {e}")
             raise
-
+class ExtraTreesRegressorStrategy(ModelBuildingRegressorStrategy):
+    def build_and_train_model(self, X_train: pd.DataFrame, y_train: pd.Series, **kwargs: Any) -> ExtraTreesRegressor:
+        try:
+            logging.info("Initializing Extra Trees Regressor model.")
+            model = ExtraTreesRegressor(**kwargs)
+            model.fit(X_train, y_train)
+            logging.info("Model training completed.")
+            return model
+        except Exception as e:
+            logging.error(f"Error in training Extra Trees Regressor model: {e}")
+            raise e  # Re-raise the original exception
 # AdaBoost Regressor Strategy (Boosting)
 class AdaBoostRegressorStrategy(ModelBuildingRegressorStrategy):
     def build_and_train_model(self, X_train: pd.DataFrame, y_train: pd.Series, **kwargs: Any) -> AdaBoostRegressor:
