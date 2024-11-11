@@ -1,10 +1,10 @@
 import logging
 from abc import ABC, abstractmethod
 import pandas as pd
-from sklearn.impute import KNNImputer, SimpleImputer, MissingIndicator
+from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.experimental import enable_iterative_imputer  # Import for IterativeImputer
 from sklearn.impute import IterativeImputer
-
+from sklearn.impute import MissingIndicator
 
 # Setup logging configuration
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 # Abstract Base Class for Missing Value Handling Strategy
 class MissingValueHandlingStrategy(ABC):
     @abstractmethod
-    def handle(self, df: pd.DataFrame, columns=None) -> pd.DataFrame:
+    def handle(self, df: pd.DataFrame, columns=None, axis=0) -> pd.DataFrame:
         pass
 
 
@@ -22,7 +22,7 @@ class KNNImputationStrategy(MissingValueHandlingStrategy):
     def __init__(self, n_neighbors=5):
         self.imputer = KNNImputer(n_neighbors=n_neighbors)
 
-    def handle(self, df: pd.DataFrame, columns=None) -> pd.DataFrame:
+    def handle(self, df: pd.DataFrame, columns=None, axis=0) -> pd.DataFrame:
         logging.info("Applying KNN imputation.")
         if columns is not None:
             imputed_array = self.imputer.fit_transform(df[columns])
@@ -39,7 +39,7 @@ class MICEImputationStrategy(MissingValueHandlingStrategy):
     def __init__(self):
         self.imputer = IterativeImputer()
 
-    def handle(self, df: pd.DataFrame, columns=None) -> pd.DataFrame:
+    def handle(self, df: pd.DataFrame, columns=None, axis=0) -> pd.DataFrame:
         logging.info("Applying MICE imputation.")
         if columns is not None:
             imputed_array = self.imputer.fit_transform(df[columns])
@@ -56,7 +56,7 @@ class SimpleImputationStrategy(MissingValueHandlingStrategy):
     def __init__(self, strategy="mean"):
         self.imputer = SimpleImputer(strategy=strategy)
 
-    def handle(self, df: pd.DataFrame, columns=None) -> pd.DataFrame:
+    def handle(self, df: pd.DataFrame, columns=None, axis=0) -> pd.DataFrame:
         logging.info(f"Applying Simple imputation with strategy: {self.imputer.strategy}.")
         if columns is not None:
             imputed_array = self.imputer.fit_transform(df[columns])
@@ -73,7 +73,7 @@ class MissingIndicatorStrategy(MissingValueHandlingStrategy):
     def __init__(self):
         self.indicator = MissingIndicator(features="missing-only")  # Only columns with missing values
 
-    def handle(self, df: pd.DataFrame, columns=None) -> pd.DataFrame:
+    def handle(self, df: pd.DataFrame, columns=None, axis=0) -> pd.DataFrame:
         logging.info("Creating missing value indicators for columns with missing data only.")
         
         # Fit the indicator on the DataFrame and transform it
@@ -97,8 +97,35 @@ class MissingIndicatorStrategy(MissingValueHandlingStrategy):
         
         logging.info("Missing value indicators created and original columns removed.")
         return df_with_indicators
+    
+# Concrete Strategy for Deleting Rows/Columns Based on Missing Value Threshold
+class DeleteMissingValuesStrategy(MissingValueHandlingStrategy):
+    def __init__(self, axis=0, threshold=0.2):
+        """
+        Parameters:
+        - axis: 0 for rows, 1 for columns
+        - threshold: The percentage of missing values required to drop a row/column
+        """
+        self.axis = axis
+        self.threshold = threshold
 
+    def handle(self, df: pd.DataFrame, columns=None, axis=0, threshold=None) -> pd.DataFrame:
+        if threshold is None:
+            threshold = self.threshold
+        
+        logging.info(f"Deleting rows/columns with more than {threshold*100}% missing values.")
+        
+        # Calculate the threshold for missing data
+        threshold_count = int(df.shape[axis] * threshold)
 
+        # Apply deletion based on the axis (rows or columns)
+        if axis == 0:  # Deleting rows
+            df_cleaned = df.dropna(axis=axis, thresh=threshold_count)
+        elif axis == 1:  # Deleting columns
+            df_cleaned = df.dropna(axis=axis, thresh=threshold_count, how='all')
+
+        logging.info(f"Deletion completed. Remaining rows/columns: {df_cleaned.shape[axis]}")
+        return df_cleaned
 
 
 # Context Class for Handling Missing Values
@@ -110,14 +137,14 @@ class MissingValueHandler:
         logging.info("Switching missing value handling strategy.")
         self._strategy = strategy
 
-    def handle_missing_values(self, df: pd.DataFrame, columns=None) -> pd.DataFrame:
+    def handle_missing_values(self, df: pd.DataFrame, columns=None, axis=0) -> pd.DataFrame:
         logging.info("Executing missing value handling strategy.")
-        return self._strategy.handle(df, columns)
+        return self._strategy.handle(df, columns, axis)
 
-
+'''
 # Example usage
 if __name__ == "__main__":
-   ''' # Example DataFrame
+    # Example DataFrame
     df = pd.DataFrame({
         'A': [1, 2, None, 4],
         'B': [None, 2, 3, 4],
@@ -129,14 +156,23 @@ if __name__ == "__main__":
     df_imputed = missing_value_handler.handle_missing_values(df, columns=['A', 'B'])
     print("After Simple Imputation:\n", df_imputed)
 
-    # Switch to creating Missing Indicators for specific columns
+    # Switch to KNN Imputation
+    missing_value_handler.set_strategy(KNNImputationStrategy(n_neighbors=2))
+    df_imputed_knn = missing_value_handler.handle_missing_values(df, columns=['A', 'B'])
+    print("\nAfter KNN Imputation:\n", df_imputed_knn)
+
+    # Switch to MICE Imputation
+    missing_value_handler.set_strategy(MICEImputationStrategy())
+    df_imputed_mice = missing_value_handler.handle_missing_values(df)
+    print("\nAfter MICE Imputation:\n", df_imputed_mice)
+
+    # Switch to Missing Indicator
     missing_value_handler.set_strategy(MissingIndicatorStrategy())
-    df_with_indicators = missing_value_handler.handle_missing_values(df, columns=['A'])
-    print("After Creating Missing Indicators:\n", df_with_indicators)
+    df_with_indicators = missing_value_handler.handle_missing_values(df)
+    print("\nAfter Creating Missing Indicators:\n", df_with_indicators)
+
+
 '''
-pass
-
-
 ''' The choice between axis=0 (columns) and axis=1 (rows) depends on the specific operation and context of your data, as each axis influences how missing values are handled during imputation.
 
 1. axis=0 (Column-wise)
@@ -168,3 +204,4 @@ Use axis=1 only in cases where your rows have strong inter-feature dependencies 
 
 
 '''
+pass
