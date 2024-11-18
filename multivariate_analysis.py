@@ -11,15 +11,32 @@ import numpy as np
 
 # Abstract Base Class for Multivariate Analysis
 class MultivariateAnalysisTemplate(ABC):
-    def analyze(self, df: pd.DataFrame):
-        """Perform a comprehensive multivariate analysis."""
+    def analyze(self, df: pd.DataFrame, methods=None):
+        """
+        Perform a comprehensive multivariate analysis on the dataset.
+        Optionally, you can select specific analysis methods to run.
+        """
+        # Clean data
         cleaned_df = self.clean_data(df)
-        self.generate_correlation_heatmap(cleaned_df)
-        self.generate_pairplot(cleaned_df)
-        self.perform_pca(cleaned_df)
-        self.perform_multivariate_regression(cleaned_df)
-        self.perform_clustering(cleaned_df)
-        self.plot_feature_importances(cleaned_df)
+        
+        # Define a dictionary of methods
+        analysis_methods = {
+            'correlation_heatmap': self.generate_correlation_heatmap,
+            'pairplot': self.generate_pairplot,
+            'pca': self.perform_pca,
+            'multivariate_regression': self.perform_multivariate_regression,
+            'clustering': self.perform_clustering,
+            'feature_importances': self.plot_feature_importances
+        }
+        
+        # If no specific methods are provided, run all available methods
+        if methods is None:
+            methods = analysis_methods.keys()
+
+        # Execute the specified methods
+        for method in methods:
+            if method in analysis_methods:
+                analysis_methods[method](cleaned_df)
 
     @abstractmethod
     def clean_data(self, df: pd.DataFrame) -> pd.DataFrame:

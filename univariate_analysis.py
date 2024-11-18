@@ -34,16 +34,15 @@ class UnivariateAnalysisStrategy(ABC):
 
 # Concrete Strategy for Advanced Numerical Features Analysis
 class NumericalUnivariateAnalysis:
-    def analyze(self, df: pd.DataFrame, feature: str):
+    def analyze(self, df: pd.DataFrame, feature: str, plots=None):
         """
         Perform advanced numerical analysis and visualization on a feature.
-        Displays various plots including histogram with KDE, box plot, KDE plot,
-        violin plot, cumulative frequency plot, frequency polygon, density plot,
-        ECDF plot, pair plot, QQ plot, strip plot, rug plot, and lag plot.
-
+        Displays various plots based on the selected methods.
+        
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
         feature (str): The name of the numerical feature/column to be analyzed.
+        plots (list): Optional list of specific plots to generate. If None, all plots are generated.
 
         Returns:
         None: Executes various visualization methods.
@@ -52,18 +51,31 @@ class NumericalUnivariateAnalysis:
         print("\nDescriptive Statistics:")
         print(df[feature].describe())
 
+        # Print additional statistics
         self._print_statistics(df, feature)
-        self._plot_histogram_with_kde(df, feature)
-        self._plot_boxplot(df, feature)
-        self._plot_kde(df, feature)
-        self._plot_violin(df, feature)
-        self._plot_frequency_polygon(df, feature)
-        self._plot_density(df, feature)
-        self._plot_ecdf(df, feature)
-        self._plot_qq(df, feature)
-        self._plot_rug(df, feature)
-        self._plot_strip(df, feature)
-  
+
+        # Define all available plot methods
+        available_plots = {
+            'histogram_kde': self._plot_histogram_with_kde,
+            'boxplot': self._plot_boxplot,
+            'kde': self._plot_kde,
+            'violin': self._plot_violin,
+            'frequency_polygon': self._plot_frequency_polygon,
+            'density': self._plot_density,
+            'ecdf': self._plot_ecdf,
+            'qq': self._plot_qq,
+            'rug': self._plot_rug,
+            'strip': self._plot_strip
+        }
+
+        # If no specific plots are provided, use all available methods
+        if plots is None:
+            plots = available_plots.keys()
+
+        # Execute the selected plot methods
+        for plot in plots:
+            if plot in available_plots:
+                available_plots[plot](df, feature)
 
     def _print_statistics(self, df: pd.DataFrame, feature: str):
         """

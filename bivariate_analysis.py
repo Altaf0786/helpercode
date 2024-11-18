@@ -31,15 +31,30 @@ class BivariateAnalysisStrategy(ABC):
         pass
 
 class ContinuousVsContinuousAnalysis(BivariateAnalysisStrategy):
-    def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None):
-        self._plot_scatter(df, feature1, feature2, hue)
-        self._plot_regression(df, feature1, feature2)
-        self._plot_residuals(df, feature1, feature2)
-        self._plot_hexbin(df, feature1, feature2)
-        self._plot_kde(df, feature1, feature2)
-        self._plot_pairplot(df, [feature1, feature2])
-        self._plot_bubble(df, feature1, feature2)
-        self._plot_correlation_heatmap(df, [feature1, feature2])
+    def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None, plots=None):
+        # Define a dictionary of plot methods
+        plot_methods = {
+            'scatter': self._plot_scatter,
+            'regression': self._plot_regression,
+            'residuals': self._plot_residuals,
+            'hexbin': self._plot_hexbin,
+            'kde': self._plot_kde,
+            'pairplot': self._plot_pairplot,
+            'bubble': self._plot_bubble,
+            'correlation_heatmap': self._plot_correlation_heatmap
+        }
+
+        # If no specific plots are requested, plot all
+        if plots is None:
+            plots = plot_methods.keys()
+
+        # Call the specified plot methods
+        for plot in plots:
+            if plot in plot_methods:
+                if plot == 'pairplot':  # Handle pairplot separately as it requires a list of features
+                    plot_methods[plot](df, [feature1, feature2])
+                else:
+                    plot_methods[plot](df, feature1, feature2, hue)
 
     def _plot_scatter(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None):
         plt.figure(figsize=(10, 6))
@@ -129,19 +144,31 @@ class ContinuousVsContinuousAnalysis(BivariateAnalysisStrategy):
 # Concrete Strategy for Continuous vs Categorical
 
 class ContinuousVsCategoricalAnalysis(BivariateAnalysisStrategy):
-    def analyze(self, df: pd.DataFrame, continuous_feature: str, categorical_feature: str, hue: str = None, top_n_categories: int = 10):
+    def analyze(self, df: pd.DataFrame, continuous_feature: str, categorical_feature: str, hue: str = None, top_n_categories: int = 10, plots=None):
         # Filter for the top N categories based on frequency
         df_filtered = self._filter_high_cardinality(df, categorical_feature, top_n_categories)
-        
-        self._plot_boxplot(df_filtered, continuous_feature, categorical_feature, hue)
-        self._plot_violin(df_filtered, continuous_feature, categorical_feature, hue)
-        self._plot_bar_with_error(df_filtered, continuous_feature, categorical_feature)
-        self._plot_strip(df_filtered, continuous_feature, categorical_feature, hue)
-        self._plot_swarm(df_filtered, continuous_feature, categorical_feature, hue)
-        self._plot_boxen(df_filtered, continuous_feature, categorical_feature)
-        self._plot_point(df_filtered, continuous_feature, categorical_feature)
-        self._plot_ecdf(df_filtered, continuous_feature, categorical_feature)
-        self._barplot(df_filtered, continuous_feature, categorical_feature, hue, estimator=np.mean)
+
+        # Define a dictionary of plot methods
+        plot_methods = {
+            'boxplot': self._plot_boxplot,
+            'violin': self._plot_violin,
+            'bar_with_error': self._plot_bar_with_error,
+            'strip': self._plot_strip,
+            'swarm': self._plot_swarm,
+            'boxen': self._plot_boxen,
+            'point': self._plot_point,
+            'ecdf': self._plot_ecdf,
+            'barplot': self._barplot
+        }
+
+        # If no specific plots are requested, plot all
+        if plots is None:
+            plots = plot_methods.keys()
+
+        # Call the specified plot methods
+        for plot in plots:
+            if plot in plot_methods:
+                plot_methods[plot](df_filtered, continuous_feature, categorical_feature, hue)
 
     def _filter_high_cardinality(self, df: pd.DataFrame, categorical_feature: str, top_n_categories: int):
         # Select only top N most frequent categories or group the rest into 'Other'
@@ -228,14 +255,26 @@ class ContinuousVsCategoricalAnalysis(BivariateAnalysisStrategy):
 
 # Concrete Strategy for Categorical vs Categorical
 class CategoricalVsCategoricalAnalysis(BivariateAnalysisStrategy):
-    def analyze(self, df: pd.DataFrame, categorical_feature1: str, categorical_feature2: str, hue: str = None):
-        self._plot_countplot(df, categorical_feature1, categorical_feature2)
-        self._plot_heatmap(df, categorical_feature1, categorical_feature2)
-        self._plot_mosaic(df, categorical_feature1, categorical_feature2)
-        self._plot_crosstab(df, categorical_feature1, categorical_feature2)
-        self._plot_stacked_bar(df, categorical_feature1, categorical_feature2)
-        self._plot_vp_with_categorical_data(df, categorical_feature1, categorical_feature2)
-        self._plot_scatter_matrix(df, [categorical_feature1, categorical_feature2])
+    def analyze(self, df: pd.DataFrame, categorical_feature1: str, categorical_feature2: str, hue: str = None, plots=None):
+        # Define a dictionary of plot methods
+        plot_methods = {
+            'countplot': self._plot_countplot,
+            'heatmap': self._plot_heatmap,
+            'mosaic': self._plot_mosaic,
+            'crosstab': self._plot_crosstab,
+            'stacked_bar': self._plot_stacked_bar,
+            'vp_with_categorical_data': self._plot_vp_with_categorical_data,
+            'scatter_matrix': self._plot_scatter_matrix
+        }
+
+        # If no specific plots are requested, plot all
+        if plots is None:
+            plots = plot_methods.keys()
+
+        # Call the specified plot methods
+        for plot in plots:
+            if plot in plot_methods:
+                plot_methods[plot](df, categorical_feature1, categorical_feature2)
 
     def _plot_countplot(self, df: pd.DataFrame, categorical_feature1: str, categorical_feature2: str):
         plt.figure(figsize=(10, 6))
