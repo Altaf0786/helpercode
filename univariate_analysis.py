@@ -294,7 +294,7 @@ class NumericalUnivariateAnalysis:
     
 # Concrete Strategy for Categorical Features Analysis
 class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
-    def analyze(self, df: pd.DataFrame, feature: str):
+    def analyze(self, df: pd.DataFrame, feature: str,plots=none):
         """
         Perform categorical feature analysis and visualization.
         Displays pie chart, exploded pie chart, donut chart, count plot, and frequency table.
@@ -311,15 +311,26 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
       
         print("\nFrequency Table:")
         print(df[feature].value_counts())
+        available_plots = {
+            'barplot': self._plot_barplot,
+            'pie_chart': self._plot_pie_chart,
+            'exploded_pie_chart': self._plot_exploded_pie_chart,
+            'donut_chart': self._plot_donut_chart,
+            'countplot': self._plot_countplot,
+            'stripplot_with_counts_and_size': self._plot_stripplot_with_counts_and_size,
+            'frequency_table': self._print_frequency_table
+        }
+        # If no specific plots are provided, use all available methods
+        if plots is None:
+            plots = available_plots.keys()
 
-        self._plot_barplot(df, feature)
-        self._plot_pie_chart(df, feature)
-        self._plot_exploded_pie_chart(df, feature)
-        self._plot_donut_chart(df, feature)
-        self._plot_countplot(df, feature)
-        self._print_frequency_table(df, feature)
-        self._plot_stripplot_with_counts_and_size(df, feature)
-          
+        # Execute the selected plot methods
+        for plot in plots:
+            if plot in available_plots:
+                available_plots[plot](df, feature)
+                
+                
+
     def _plot_barplot(self, df: pd.DataFrame, feature: str):
         """
         Plot a bar plot to visualize the frequency of each category in the categorical feature.

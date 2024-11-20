@@ -148,15 +148,6 @@ class GeneralizedMultivariateAnalysis(MultivariateAnalysisTemplate):
 
 # Example usage
 if __name__ == "__main__":
-    # Load the preprocessed data
-   ''' df = pd.read_csv('../extracted-data/your_data_file.csv')
-
-    # Specify the target column
-    target_column = 'SalePrice'  # Specify the target variable
-
-    # Perform Generalized Multivariate Analysis
-    multivariate_analyzer = GeneralizedMultivariateAnalysis()
-
-    # Execute the analysis
-    multivariate_analyzer.analyze(df, target_column)'''
+  
+  ""
 pass    
