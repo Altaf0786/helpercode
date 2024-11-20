@@ -63,7 +63,7 @@ class ContinuousVsContinuousAnalysis(BivariateAnalysisStrategy):
         plt.xlabel(feature1)
         plt.ylabel(feature2)
         plt.show()
-  
+    
 
 
 
@@ -158,7 +158,8 @@ class ContinuousVsCategoricalAnalysis(BivariateAnalysisStrategy):
             'boxen': self._plot_boxen,
             'point': self._plot_point,
             'ecdf': self._plot_ecdf,
-            'barplot': self._barplot
+            'barplot': self._barplot,
+            'heatmap_by_feature' :self._plot_heatmap_by_feature
         }
 
         # If no specific plots are requested, plot all
@@ -175,7 +176,40 @@ class ContinuousVsCategoricalAnalysis(BivariateAnalysisStrategy):
         top_categories = df[categorical_feature].value_counts().nlargest(top_n_categories).index
         df_filtered = df[df[categorical_feature].isin(top_categories)]
         return df_filtered
+    
+    def _plot_heatmap_by_feature(df: pd.DataFrame, categorical_feature: str, continuous_feature: str, extractor_function=None, figsize=(5, 25)):
+        """
+        Plots a heatmap of the average continuous feature per categorical feature, sorted by a specified extractor function.
 
+        Parameters:
+        - df (pd.DataFrame): The input dataframe containing the data.
+        - categorical_feature (str): The column name that holds the categorical feature (e.g., sector).
+        - continuous_feature (str): The column name that holds the continuous feature (e.g., price).
+        - extractor_function (function, optional): A function to extract a sorting key (e.g., for sorting sectors by number).
+        - figsize (tuple): The size of the plot (default is (5, 25)).
+
+        Returns:
+        - None
+        """
+        # Group by the categorical feature and calculate the average of the continuous feature
+        avg_feature_per_category = df.groupby(categorical_feature)[continuous_feature].mean().reset_index()
+
+        # Apply extractor function for sorting if provided
+        if extractor_function:
+            avg_feature_per_category['sort_key'] = avg_feature_per_category[categorical_feature].apply(extractor_function)
+            avg_feature_per_category_sorted = avg_feature_per_category.sort_values(by='sort_key')
+        else:
+            avg_feature_per_category_sorted = avg_feature_per_category.sort_values(by=categorical_feature)
+
+        # Plot the heatmap
+        plt.figure(figsize=figsize)
+        sns.heatmap(avg_feature_per_category_sorted.set_index(categorical_feature)[[continuous_feature]], annot=True, fmt=".2f", linewidths=.5)
+        plt.title(f'Average {continuous_feature} per {categorical_feature}')
+        plt.xlabel(f'Average {continuous_feature}')
+        plt.ylabel(categorical_feature)
+        plt.show()
+
+    
     def _plot_boxplot(self, df: pd.DataFrame, continuous_feature: str, categorical_feature: str, hue: str = None):
         plt.figure(figsize=(10, 6))
         sns.boxplot(x=categorical_feature, y=continuous_feature, hue=hue, data=df)
@@ -255,7 +289,7 @@ class ContinuousVsCategoricalAnalysis(BivariateAnalysisStrategy):
 
 # Concrete Strategy for Categorical vs Categorical
 class CategoricalVsCategoricalAnalysis(BivariateAnalysisStrategy):
-    def analyze(self, df: pd.DataFrame, categorical_feature1: str, categorical_feature2: str, hue: str = None, plots=None):
+    def analyze(self, df: pd.DataFrame, categorical_feature1: str, categorical_feature2: str, hue: str = None,aggfunc: str = 'count', plots=None):
         # Define a dictionary of plot methods
         plot_methods = {
             'countplot': self._plot_countplot,
@@ -264,7 +298,8 @@ class CategoricalVsCategoricalAnalysis(BivariateAnalysisStrategy):
             'crosstab': self._plot_crosstab,
             'stacked_bar': self._plot_stacked_bar,
             'vp_with_categorical_data': self._plot_vp_with_categorical_data,
-            'scatter_matrix': self._plot_scatter_matrix
+            'scatter_matrix': self._plot_scatter_matrix,
+            'correlation_heatmap': self._plot_pivot_heatmap
         }
 
         # If no specific plots are requested, plot all
@@ -275,7 +310,33 @@ class CategoricalVsCategoricalAnalysis(BivariateAnalysisStrategy):
         for plot in plots:
             if plot in plot_methods:
                 plot_methods[plot](df, categorical_feature1, categorical_feature2)
+    
+    def _plot_pivot_heatmap(self, df: pd.DataFrame, categorical_feature1: str, categorical_feature2: str, target: str, aggfunc: str='mean'):
+        """
+        Generalized function to plot a heatmap for two categorical features against a numerical target.
+        
+        Parameters:
+        df (pd.DataFrame): The input dataframe.
+        categorical_feature1 (str): The first categorical feature.
+        categorical_feature2 (str): The second categorical feature.
+        target (str): The numeric target variable to aggregate (e.g., 'price').
+        aggfunc (str): The aggregation function, default is 'mean'.
+        
+        """
+        # Create a pivot table using the two categorical features and the target variable
+        pivot_table = pd.pivot_table(df, index=categorical_feature1, columns=categorical_feature2, values=target, aggfunc=aggfunc)
+        
+        # Set up the plot size
+        plt.figure(figsize=(15, 4))
+        
+        # Create a heatmap with annotations
+        sns.heatmap(pivot_table, annot=True, cmap="YlGnBu", fmt='.2f')  # You can change the colormap to your preference
+        
+        # Set title and display the plot
+        plt.title(f'Heatmap of {target} by {categorical_feature1} and {categorical_feature2}')
+        plt.show()
 
+            
     def _plot_countplot(self, df: pd.DataFrame, categorical_feature1: str, categorical_feature2: str):
         plt.figure(figsize=(10, 6))
         sns.countplot(x=categorical_feature1, hue=categorical_feature2, data=df)
@@ -283,6 +344,7 @@ class CategoricalVsCategoricalAnalysis(BivariateAnalysisStrategy):
         plt.xlabel(categorical_feature1)
         plt.ylabel('Count')
         plt.show()
+        
 
     def _plot_heatmap(self, df: pd.DataFrame, categorical_feature1: str, categorical_feature2: str):
         crosstab = pd.crosstab(df[categorical_feature1], df[categorical_feature2])
@@ -334,8 +396,8 @@ class BivariateAnalysisContext:
     def set_strategy(self, strategy: BivariateAnalysisStrategy):
         self._strategy = strategy
 
-    def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None):
-        self._strategy.analyze(df, feature1, feature2, hue)
+    def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None,aggregate=None):
+        self._strategy.analyze(df, feature1, feature2, hue,aggregate)
 if __name__ == "__main__":
 # Example usage
    ''' df = sns.load_dataset('titanic')  # Ensure the dataset contains 'age', 'fare', 'pclass', and 'survived'
