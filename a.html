@@ -1,0 +1,55 @@
+<form id="property-form">
+    <h3>Property Information</h3>
+
+    <label for="property-type">Property Type:</label>
+    <select id="property-type" name="property_type">
+        <option value="Apartment">Apartment</option>
+        <option value="Villa">Villa</option>
+        <option value="House">House</option>
+        <!-- Add other options as needed -->
+    </select><br><br>
+
+    <label for="facing">Facing:</label>
+    <select id="facing" name="facing">
+        <option value="North">North</option>
+        <option value="South">South</option>
+        <option value="East">East</option>
+        <option value="West">West</option>
+    </select><br><br>
+
+    <label for="bedroom-num">Number of Bedrooms:</label>
+    <input type="number" id="bedroom-num" name="bedroom_num" required><br><br>
+
+    <label for="area">Area (in sq.ft):</label>
+    <input type="number" id="area" name="area" required><br><br>
+
+    <label for="price-per-sqft">Price per Sq.Ft (optional):</label>
+    <input type="number" id="price-per-sqft" name="price_per_sqft"><br><br>
+
+    <label for="city">City:</label>
+    <input type="text" id="city" name="city" required><br><br>
+
+    <label for="locality">Locality:</label>
+    <input type="text" id="locality" name="locality"><br><br>
+
+    <label for="furnish">Furnish Type:</label>
+    <select id="furnish" name="furnish">
+        <option value="Furnished">Furnished</option>
+        <option value="Unfurnished">Unfurnished</option>
+        <option value="Semi-Furnished">Semi-Furnished</option>
+    </select><br><br>
+
+    <label for="ready-to-move">Ready to Move?</label>
+    <input type="checkbox" id="ready-to-move" name="ready_to_move"><br><br>
+
+    <label for="parking">Parking Available?</label>
+    <input type="checkbox" id="parking" name="parking"><br><br>
+
+    <label for="amenities">Amenities:</label><br>
+    <input type="checkbox" id="gym" name="amenities" value="Gym"> Gym<br>
+    <input type="checkbox" id="swimming-pool" name="amenities" value="Swimming Pool"> Swimming Pool<br>
+    <input type="checkbox" id="shopping" name="amenities" value="Shopping"> Shopping Area<br>
+    <input type="checkbox" id="metro" name="amenities" value="Metro Station"> Metro Station<br><br>
+
+    <button type="submit">Submit</button>
+</form>
