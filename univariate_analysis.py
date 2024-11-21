@@ -294,7 +294,7 @@ class NumericalUnivariateAnalysis:
     
 # Concrete Strategy for Categorical Features Analysis
 class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
-    def analyze(self, df: pd.DataFrame, feature: str,plots=none):
+    def analyze(self, df: pd.DataFrame, feature: str,plots=None):
         """
         Perform categorical feature analysis and visualization.
         Displays pie chart, exploded pie chart, donut chart, count plot, and frequency table.
