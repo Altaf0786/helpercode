@@ -47,12 +47,7 @@ class NumericalUnivariateAnalysis:
         Returns:
         None: Executes various visualization methods.
         """
-        print(f"Analysis for Numerical Feature '{feature}':")
-        print("\nDescriptive Statistics:")
-        print(df[feature].describe())
-
-        # Print additional statistics
-        self._print_statistics(df, feature)
+   
 
         # Define all available plot methods
         available_plots = {
@@ -65,7 +60,8 @@ class NumericalUnivariateAnalysis:
             'ecdf': self._plot_ecdf,
             'qq': self._plot_qq,
             'rug': self._plot_rug,
-            'strip': self._plot_strip
+            'strip': self._plot_strip,
+            'statistics_and_describe':self._print_statistics
         }
 
         # If no specific plots are provided, use all available methods
@@ -86,10 +82,15 @@ class NumericalUnivariateAnalysis:
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
         feature (str): The name of the numerical feature/column to be analyzed.
-
+        
         Returns:
         None: Outputs statistical measures to the console.
         """
+        
+        print(f"Analysis for Numerical Feature '{feature}':")
+        print("\nDescriptive Statistics:")
+        print(df[feature].describe())
+        
         print(f"Mean: {df[feature].mean()}")
         print(f"Median: {df[feature].median()}")
         print(f"Standard Deviation: {df[feature].std()}")
@@ -308,9 +309,6 @@ class CategoricalUnivariateAnalysis(UnivariateAnalysisStrategy):
         """
         print(f"Analysis for Categorical Feature '{feature}':")
        
-      
-        print("\nFrequency Table:")
-        print(df[feature].value_counts())
         available_plots = {
             'barplot': self._plot_barplot,
             'pie_chart': self._plot_pie_chart,
