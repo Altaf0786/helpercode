@@ -216,38 +216,37 @@ class NumericalUnivariateAnalysis:
         plt.grid(True)
         plt.show()
 
-    def _plot_ecdf(self, df: pd.DataFrame, feature: str, color_scheme: str = 'Blues', template: str = 'seaborn'):
-        """
-        Plot an Empirical Cumulative Distribution Function (ECDF) using Plotly Express with dynamic color scheme and template.
-        
-        Parameters:
-        df (pd.DataFrame): The dataframe containing the data.
-        feature (str): The name of the numerical feature/column to be analyzed.
-        color_scheme (str): The color scheme to apply to the ECDF plot. Default is 'Blues'.
-        template (str): The Plotly template to use for styling. Default is 'seaborn'.
-        
-        Returns:
-        None: Displays the ECDF plot.
-        """
-        # Sort the data for ECDF
-        sorted_data = np.sort(df[feature].dropna())
-        ecdf = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
+    def _plot_ecdf(self, df: pd.DataFrame, feature: str):
+            """
+            Plot a simple Empirical Cumulative Distribution Function (ECDF) using Plotly Express.
+            
+            Parameters:
+            df (pd.DataFrame): The dataframe containing the data.
+            feature (str): The name of the numerical feature/column to be analyzed.
+            
+            Returns:
+            None: Displays the ECDF plot.
+            """
+            # Sort the data for ECDF
+            sorted_data = np.sort(df[feature].dropna())
+            ecdf = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
 
-        # Create a DataFrame for Plotly visualization
-        ecdf_df = pd.DataFrame({feature: sorted_data, 'ECDF': ecdf})
+            # Create a DataFrame for Plotly visualization
+            ecdf_df = pd.DataFrame({feature: sorted_data, 'ECDF': ecdf})
 
-        # Generate the ECDF plot using Plotly Express
-        fig = px.line(ecdf_df, x=feature, y='ECDF', 
-                      title=f'Empirical Cumulative Distribution Function (ECDF) of {feature}',
-                      labels={feature: feature, 'ECDF': 'ECDF'},
-                      template=template, 
-                      line_shape='linear')
+            # Generate the ECDF plot using Plotly Express
+            fig = px.line(
+                ecdf_df, 
+                x=feature, 
+                y='ECDF', 
+                title=f'Empirical Cumulative Distribution Function (ECDF) of {feature}',
+                labels={feature: feature, 'ECDF': 'ECDF'},
+                line_shape='linear'
+            )
 
-        # Apply color scheme to the plot
-        fig.update_traces(line=dict(color=color_scheme))
+            # Show the plot
+            fig.show()
 
-        # Show the plot
-        fig.show()
   
   # Define the function to plot a QQ plot for normality check
     import statsmodels.api as sm
