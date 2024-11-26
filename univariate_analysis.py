@@ -215,29 +215,38 @@ class NumericalUnivariateAnalysis:
         plt.grid(True)
         plt.show()
 
-    def _plot_ecdf(self, df: pd.DataFrame, feature: str):
+    def _plot_ecdf(self, df: pd.DataFrame, feature: str, color_scheme: str = 'Blues', template: str = 'seaborn'):
         """
-        Plot an Empirical Cumulative Distribution Function (ECDF) to show the proportion of observations 
-        less than or equal to each value of the numerical feature.
-
+        Plot an Empirical Cumulative Distribution Function (ECDF) using Plotly Express with dynamic color scheme and template.
+        
         Parameters:
         df (pd.DataFrame): The dataframe containing the data.
         feature (str): The name of the numerical feature/column to be analyzed.
-
+        color_scheme (str): The color scheme to apply to the ECDF plot. Default is 'Blues'.
+        template (str): The Plotly template to use for styling. Default is 'seaborn'.
+        
         Returns:
-        None: Displays an ECDF plot.
+        None: Displays the ECDF plot.
         """
+        # Sort the data for ECDF
         sorted_data = np.sort(df[feature].dropna())
         ecdf = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
 
-        plt.figure(figsize=(10, 6))
-        plt.plot(sorted_data, ecdf, marker='o', linestyle='-', markersize=6)
-        plt.title(f'ECDF Plot of {feature}', fontsize=18)
-        plt.xlabel(feature, fontsize=14)
-        plt.ylabel('ECDF', fontsize=14)
-        plt.grid(True)
-        plt.show()
+        # Create a DataFrame for Plotly visualization
+        ecdf_df = pd.DataFrame({feature: sorted_data, 'ECDF': ecdf})
 
+        # Generate the ECDF plot using Plotly Express
+        fig = px.line(ecdf_df, x=feature, y='ECDF', 
+                      title=f'Empirical Cumulative Distribution Function (ECDF) of {feature}',
+                      labels={feature: feature, 'ECDF': 'ECDF'},
+                      template=template, 
+                      line_shape='linear')
+
+        # Apply color scheme to the plot
+        fig.update_traces(line=dict(color=color_scheme))
+
+        # Show the plot
+        fig.show()
   
   # Define the function to plot a QQ plot for normality check
     import statsmodels.api as sm
