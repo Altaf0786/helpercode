@@ -5,6 +5,7 @@ import seaborn as sns
 import statsmodels.api as sm 
 import numpy as np
 from scipy import stats
+import plotly.express as px
 
 # Define color palettes for visualizations
 color_palette = {
