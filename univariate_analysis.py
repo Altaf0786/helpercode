@@ -20,7 +20,7 @@ color_palette = {
 # Abstract Base Class for Univariate Analysis Strategy
 class UnivariateAnalysisStrategy(ABC):
     @abstractmethod
-    def analyze(self, df: pd.DataFrame, feature: str,plots=None):
+    def analyze(self, df: pd.DataFrame, feature: str,plots=None,**kwargs):
         """
         Perform univariate analysis on a specific feature of the dataframe.
 
@@ -35,7 +35,7 @@ class UnivariateAnalysisStrategy(ABC):
 
 # Concrete Strategy for Advanced Numerical Features Analysis
 class NumericalUnivariateAnalysis:
-    def analyze(self, df: pd.DataFrame, feature: str, plots=None):
+    def analyze(self, df: pd.DataFrame, feature: str, plots=None,**kwargs):
         """
         Perform advanced numerical analysis and visualization on a feature.
         Displays various plots based on the selected methods.
@@ -505,7 +505,7 @@ class UnivariateAnalyzer:
         """
         self._strategy = strategy
 
-    def execute_analysis(self, df: pd.DataFrame, feature: str,plots=None):
+    def execute_analysis(self, df: pd.DataFrame, feature: str,plots=None,**kwargs):
         """
         Executes the univariate analysis using the current strategy.
 

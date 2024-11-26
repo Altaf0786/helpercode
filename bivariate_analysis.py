@@ -31,7 +31,7 @@ class BivariateAnalysisStrategy(ABC):
         pass
 
 class ContinuousVsContinuousAnalysis(BivariateAnalysisStrategy):
-    def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None, plots=None):
+    def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, hue: str = None, plots=None,**kwargs):
         # Define a dictionary of plot methods
         plot_methods = {
             'scatter': self._plot_scatter,
