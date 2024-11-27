@@ -4,7 +4,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from statsmodels.graphics.mosaicplot import mosaic
 
-
 # Abstract Base Class for Bivariate Analysis
 class BivariateAnalysisTemplate(ABC):
     def analyze(self, df: pd.DataFrame, feature1: str, feature2: str, plots: list = None, hue: str = None, **kwargs):
@@ -22,7 +21,6 @@ class BivariateAnalysisTemplate(ABC):
         Returns:
         None
         """
-        self.validate_feature_types(df, feature1, feature2)
         if plots is None:
             plots = self.default_plots()
         for plot_type in plots:
@@ -30,10 +28,6 @@ class BivariateAnalysisTemplate(ABC):
 
     @abstractmethod
     def plot(self, df: pd.DataFrame, feature1: str, feature2: str, plot_type: str, hue: str, **kwargs):
-        pass
-
-    @abstractmethod
-    def validate_feature_types(self, df: pd.DataFrame, feature1: str, feature2: str):
         pass
 
     @abstractmethod
@@ -65,10 +59,6 @@ class NumericalVsNumericalAnalysis(BivariateAnalysisTemplate):
             raise ValueError(f"Unsupported plot type: {plot_type}")
         plt.show()
 
-    def validate_feature_types(self, df: pd.DataFrame, feature1: str, feature2: str):
-        if not pd.api.types.is_numeric_dtype(df[feature1]) or not pd.api.types.is_numeric_dtype(df[feature2]):
-            raise ValueError(f"Both features must be numerical: {feature1}, {feature2}")
-
     def default_plots(self):
         return ["scatter", "regression", "hexbin", "line", "kde"]
 
@@ -95,10 +85,6 @@ class NumericalVsCategoricalAnalysis(BivariateAnalysisTemplate):
             raise ValueError(f"Unsupported plot type: {plot_type}")
         plt.show()
 
-    def validate_feature_types(self, df: pd.DataFrame, feature1: str, feature2: str):
-        if not pd.api.types.is_numeric_dtype(df[feature1]) or not pd.api.types.is_categorical_dtype(df[feature2]):
-            raise ValueError(f"Feature1 must be numerical and Feature2 must be categorical: {feature1}, {feature2}")
-
     def default_plots(self):
         return ["box", "strip", "point", "violin", "swarm"]
 
@@ -119,10 +105,6 @@ class CategoricalVsCategoricalAnalysis(BivariateAnalysisTemplate):
         else:
             raise ValueError(f"Unsupported plot type: {plot_type}")
         plt.show()
-
-    def validate_feature_types(self, df: pd.DataFrame, feature1: str, feature2: str):
-        if not pd.api.types.is_categorical_dtype(df[feature1]) or not pd.api.types.is_categorical_dtype(df[feature2]):
-            raise ValueError(f"Both features must be categorical: {feature1}, {feature2}")
 
     def default_plots(self):
         return ["count", "heatmap", "mosaic"]
