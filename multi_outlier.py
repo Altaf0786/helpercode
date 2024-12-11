@@ -182,7 +182,7 @@ class OutlierDetection:
 
 
 if __name__ == "__main__":
-        ''''   # Load Dataset
+        '''   # Load Dataset
             url = 'https://raw.githubusercontent.com/analyticsindiamagazine/MocksDatasets/main/Credit_Card.csv'
             df = pd.read_csv(url)
 
@@ -263,5 +263,5 @@ if __name__ == "__main__":
             outlier_detector_dbscan.visualize_pca_with_colors(df=df, outlier_column='Outlier_DBSCAN', title="PCA - DBSCAN Outlier Detection")   
             # notes
             #the data is standardized (e.g., using StandardScaler) before applying DBSCAN.
-            # This will scale the features to a common range, avoiding one feature from dominating the distance computation.''''
+            # This will scale the features to a common range, avoiding one feature from dominating the distance computation.'''
         pass               
