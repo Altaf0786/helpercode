@@ -7,7 +7,7 @@ from sklearn.neighbors import LocalOutlierFactor
 from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
-
+from sklearn.manifold import TSNE
 # Outlier Detection Strategy Interface
 class OutlierDetectionStrategy:
     def detect(self, df, numerical_columns, **kwargs):
@@ -138,43 +138,130 @@ class OutlierDetection:
             plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=10, label='Non-Outlier'),
             plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=10, label='Outlier')
         ])
-        plt.show()
+
+
+    ''' def visualize_tsne_with_colors(self, df, outlier_column, title):
+        """
+        Visualize t-SNE results with specified colors for different labels and additional error counts in the title.
+        
+        Parameters:
+            df (pd.DataFrame): The dataframe containing numerical columns for t-SNE and outlier information.
+            outlier_column (str): The column indicating outliers (e.g., 0 for normal, 1 for outlier).
+            title (str): Title for the plot.
+        """
+        # Perform t-SNE for 2D visualization
+        tsne = TSNE(n_components=2, random_state=42)
+        tsne_result = tsne.fit_transform(df[self.numerical_columns])
+
+        # Define colors and labels
+        colors = ["blue", "red"]  # Blue for non-outliers, red for outliers
+        labels = ["Non-Outlier", "Outlier"]
+
+        # Scatter plot
+        plt.figure(figsize=(10, 7))
+        for i, color in enumerate(colors):
+            mask = df[outlier_column] == i
+            plt.scatter(
+                tsne_result[mask, 0],
+                tsne_result[mask, 1],
+                c=color,
+                edgecolors="k",
+                label=labels[i],
+                s=50,  # Adjust size as needed
+                alpha=0.7
+            )
+
+        # Plot title and labels
+        plt.title(title)
+        plt.legend(loc="upper right")
+        plt.xlabel("t-SNE Dimension 1")
+        plt.ylabel("t-SNE Dimension 2")
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()'''
+
 
 if __name__ == "__main__":
-    # Load Dataset
-   ''' url = 'https://raw.githubusercontent.com/analyticsindiamagazine/MocksDatasets/main/Credit_Card.csv'
-    df = pd.read_csv(url)
+        ''''   # Load Dataset
+            url = 'https://raw.githubusercontent.com/analyticsindiamagazine/MocksDatasets/main/Credit_Card.csv'
+            df = pd.read_csv(url)
 
-    # Select numeric columns for outlier detection
-    df_numeric = df.select_dtypes(include=[np.number]).dropna()
-    numerical_columns = df_numeric.columns.tolist()
+            # Select numeric columns for outlier detection
+            df_numeric = df.select_dtypes(include=[np.number]).dropna()
+            numerical_columns = df_numeric.columns.tolist()
 
-    # Example: Apply KNN strategy to detect outliers
-    knn_strategy = KNNStrategy()
-    outlier_detector = OutlierDetection(strategy=knn_strategy, df=df, numerical_columns=numerical_columns)
+            # Example: Apply KNN strategy to detect outliers
+            knn_strategy = KNNStrategy()
+            outlier_detector = OutlierDetection(strategy=knn_strategy, df=df, numerical_columns=numerical_columns)
 
-    # Detect outliers with KNN
-    df_with_outliers = outlier_detector.detect_outliers(n_neighbors=5)
+            # Detect outliers with KNN
+            df_with_outliers = outlier_detector.detect_outliers(n_neighbors=5)
 
-    # Visualize the outlier distributions for KNN
-    outlier_detector.visualize_outlier_distributions()
+            # Visualize the outlier distributions for KNN
+            outlier_detector.visualize_outlier_distributions()
 
-    # Handle and visualize KNN method-wise:
-    df_no_outliers_knn = outlier_detector.handle_outliers(method='remove', outlier_column='Outlier_KNN')
-    outlier_detector.visualize_pca_with_colors(df=df, outlier_column='Outlier_KNN', title="PCA - KNN Outlier Detection")
+            # Handle and visualize KNN method-wise:
+            df_no_outliers_knn = outlier_detector.handle_outliers(method='remove', outlier_column='Outlier_KNN')
+            outlier_detector.visualize_pca_with_colors(df=df, outlier_column='Outlier_KNN', title="PCA - KNN Outlier Detection")
 
-    # Example: Apply One-Class SVM strategy to detect outliers
-    svm_strategy = OneClassSVMStrategy()
-    outlier_detector_svm = OutlierDetection(strategy=svm_strategy, df=df, numerical_columns=numerical_columns)
+            # Example: Apply One-Class SVM strategy to detect outliers
+            svm_strategy = OneClassSVMStrategy()
+            outlier_detector_svm = OutlierDetection(strategy=svm_strategy, df=df, numerical_columns=numerical_columns)
 
-    # Detect outliers with One-Class SVM
-    df_with_outliers_svm = outlier_detector_svm.detect_outliers(nu=0.1)
+            # Detect outliers with One-Class SVM
+            df_with_outliers_svm = outlier_detector_svm.detect_outliers(nu=0.1)
 
-    # Visualize the outlier distributions for SVM
-    outlier_detector_svm.visualize_outlier_distributions()
+            # Visualize the outlier distributions for SVM
+            outlier_detector_svm.visualize_outlier_distributions()
 
-    # Handle and visualize One-Class SVM method-wise:
-    df_no_outliers_svm = outlier_detector_svm.handle_outliers(method='remove', outlier_column='Outlier_SVM')
-    outlier_detector_svm.visualize_pca_with_colors(df=df, outlier_column='Outlier_SVM', title="PCA - One-Class SVM Outlier Detection")
-'''
-pass
+            # Handle and visualize One-Class SVM method-wise:
+            df_no_outliers_svm = outlier_detector_svm.handle_outliers(method='remove', outlier_column='Outlier_SVM')
+            outlier_detector_svm.visualize_pca_with_colors(df=df, outlier_column='Outlier_SVM', title="PCA - One-Class SVM Outlier Detection")
+            
+
+
+            # Example: Apply Isolation Forest strategy to detect outliers
+            iso_forest_strategy = IsolationForestStrategy()
+            outlier_detector_if = OutlierDetection(strategy=iso_forest_strategy, df=df, numerical_columns=numerical_columns)
+
+            # Detect outliers with Isolation Forest
+            df_with_outliers_if = outlier_detector_if.detect_outliers(contamination=0.05)
+
+            # Visualize the outlier distributions for Isolation Forest
+            outlier_detector_if.visualize_outlier_distributions()
+
+            # Handle and visualize Isolation Forest method-wise:
+            df_no_outliers_if = outlier_detector_if.handle_outliers(method='remove', outlier_column='Outlier_IF')
+            outlier_detector_if.visualize_pca_with_colors(df=df, outlier_column='Outlier_IF', title="PCA - Isolation Forest Outlier Detection")
+
+            # Example: Apply LOF strategy to detect outliers
+            lof_strategy = LOFStrategy()
+            outlier_detector_lof = OutlierDetection(strategy=lof_strategy, df=df, numerical_columns=numerical_columns)
+
+            # Detect outliers with LOF
+            df_with_outliers_lof = outlier_detector_lof.detect_outliers(n_neighbors=20)
+
+            # Visualize the outlier distributions for LOF
+            outlier_detector_lof.visualize_outlier_distributions()
+
+            # Handle and visualize LOF method-wise:
+            df_no_outliers_lof = outlier_detector_lof.handle_outliers(method='remove', outlier_column='Outlier_LOF')
+            outlier_detector_lof.visualize_pca_with_colors(df=df, outlier_column='Outlier_LOF', title="PCA - LOF Outlier Detection")
+
+            # Example: Apply DBSCAN strategy to detect outliers
+            dbscan_strategy = DBSCANStrategy()
+            outlier_detector_dbscan = OutlierDetection(strategy=dbscan_strategy, df=df, numerical_columns=numerical_columns)
+
+            # Detect outliers with DBSCAN
+            df_with_outliers_dbscan = outlier_detector_dbscan.detect_outliers(eps=0.5, min_samples=5)
+
+            # Visualize the outlier distributions for DBSCAN
+            outlier_detector_dbscan.visualize_outlier_distributions()
+
+            # Handle and visualize DBSCAN method-wise:
+            df_no_outliers_dbscan = outlier_detector_dbscan.handle_outliers(method='remove', outlier_column='Outlier_DBSCAN')
+            outlier_detector_dbscan.visualize_pca_with_colors(df=df, outlier_column='Outlier_DBSCAN', title="PCA - DBSCAN Outlier Detection")   
+            # notes
+            #the data is standardized (e.g., using StandardScaler) before applying DBSCAN.
+            # This will scale the features to a common range, avoiding one feature from dominating the distance computation.''''
+        pass               
